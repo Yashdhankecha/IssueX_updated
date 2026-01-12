@@ -329,7 +329,7 @@ router.patch('/users/:id', protect, requireAdmin, async (req, res) => {
 
     const updateData = {};
     if (role) updateData.role = role;
-    if (department) updateData.department = department;
+    if (department !== undefined) updateData.department = department;
     if (typeof isActive === 'boolean') updateData.isActive = isActive;
     if (typeof isEmailVerified === 'boolean') updateData.isEmailVerified = isEmailVerified;
 

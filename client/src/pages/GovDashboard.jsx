@@ -27,10 +27,7 @@ const GovDashboard = () => {
         byDepartment: {},
         bySeverity: { low: 0, medium: 0, high: 0, critical: 0 }
     });
-    const [thresholds, setThresholds] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showThresholdModal, setShowThresholdModal] = useState(false);
-    const [selectedDepartment, setSelectedDepartment] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
@@ -43,7 +40,6 @@ const GovDashboard = () => {
             const res = await api.get('/api/government/dashboard');
             if (res.data.success) {
                 setStats(res.data.data.stats);
-                setThresholds(res.data.data.thresholds);
             }
         } catch (error) {
             console.error(error);
@@ -51,22 +47,6 @@ const GovDashboard = () => {
         } finally {
             setLoading(false);
             setRefreshing(false);
-        }
-    };
-
-    const handleUpdateThreshold = async (department, maxPendingHours, maxInProgressHours) => {
-        try {
-            const res = await api.put(`/api/government/thresholds/${department}`, {
-                maxPendingHours,
-                maxInProgressHours
-            });
-            if (res.data.success) {
-                toast.success(`Threshold for ${department} updated`);
-                fetchDashboardData();
-                setShowThresholdModal(false);
-            }
-        } catch (error) {
-            toast.error('Failed to update threshold');
         }
     };
 
@@ -157,83 +137,6 @@ const GovDashboard = () => {
             </motion.div>
         </Link>
     );
-
-    const ThresholdModal = () => {
-        const [pendingHours, setPendingHours] = useState(selectedDepartment?.maxPendingHours || 72);
-        const [inProgressHours, setInProgressHours] = useState(selectedDepartment?.maxInProgressHours || 168);
-
-        return (
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                onClick={() => setShowThresholdModal(false)}
-            >
-                <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
-                    onClick={(e) => e.stopPropagation()}
-                    className="bg-white rounded-[2rem] p-6 w-full max-w-md shadow-2xl"
-                >
-                    <h3 className="text-xl font-black text-slate-900 mb-2">
-                        {getDepartmentLabel(selectedDepartment?.department)}
-                    </h3>
-                    <p className="text-slate-500 text-sm mb-6">Configure threshold times for this department</p>
-
-                    <div className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">
-                                Max Pending Time (hours)
-                            </label>
-                            <input
-                                type="number"
-                                value={pendingHours}
-                                onChange={(e) => setPendingHours(parseInt(e.target.value) || 1)}
-                                min="1"
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
-                            />
-                            <p className="text-xs text-slate-400 mt-1">
-                                Issues pending longer than this will be flagged as overdue ({formatDuration(pendingHours)})
-                            </p>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">
-                                Max In-Progress Time (hours)
-                            </label>
-                            <input
-                                type="number"
-                                value={inProgressHours}
-                                onChange={(e) => setInProgressHours(parseInt(e.target.value) || 1)}
-                                min="1"
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
-                            />
-                            <p className="text-xs text-slate-400 mt-1">
-                                Issues in-progress longer than this will be flagged ({formatDuration(inProgressHours)})
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-3 mt-8">
-                        <button
-                            onClick={() => setShowThresholdModal(false)}
-                            className="flex-1 px-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-colors"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={() => handleUpdateThreshold(selectedDepartment?.department, pendingHours, inProgressHours)}
-                            className="flex-1 px-4 py-3 rounded-xl bg-blue-600 font-bold text-white hover:bg-blue-700 transition-colors"
-                        >
-                            Save Changes
-                        </button>
-                    </div>
-                </motion.div>
-            </motion.div>
-        );
-    };
 
     if (loading) {
         return (
@@ -343,10 +246,10 @@ const GovDashboard = () => {
                     />
                 </div>
 
-                {/* Two Column Layout */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Two Column Layout - Simplified removing thresholds */}
+                <div className="grid grid-cols-1 gap-6">
                     {/* Overdue Issues List */}
-                    <div className="lg:col-span-2 bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
+                    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
                         <div className="flex items-center justify-between mb-6">
                             <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                                 <AlertCircle size={20} className="text-red-500" />
@@ -367,55 +270,16 @@ const GovDashboard = () => {
                                 <p className="text-slate-500 text-sm">No overdue issues at the moment</p>
                             </div>
                         ) : (
-                            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {[...(stats.overdue?.pending || []), ...(stats.overdue?.inProgress || [])]
                                     .sort((a, b) => b.overdueBy - a.overdueBy)
-                                    .slice(0, 10)
+                                    .slice(0, 9)
                                     .map((issue, index) => (
                                         <OverdueCard key={issue._id || index} issue={issue} />
                                     ))
                                 }
                             </div>
                         )}
-                    </div>
-
-                    {/* Department Thresholds */}
-                    <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                <Settings size={20} className="text-slate-500" />
-                                Thresholds
-                            </h3>
-                        </div>
-
-                        <div className="space-y-3">
-                            {thresholds.map((threshold, index) => (
-                                <motion.div
-                                    key={threshold.department || index}
-                                    whileHover={{ scale: 1.02 }}
-                                    onClick={() => {
-                                        setSelectedDepartment(threshold);
-                                        setShowThresholdModal(true);
-                                    }}
-                                    className="p-4 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/30 cursor-pointer transition-all"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <span className="font-bold text-slate-800 text-sm">
-                                            {getDepartmentLabel(threshold.department)}
-                                        </span>
-                                        <ChevronRight size={16} className="text-slate-400" />
-                                    </div>
-                                    <div className="flex gap-4 mt-2 text-xs text-slate-500">
-                                        <span className="flex items-center gap-1">
-                                            <Clock size={12} /> Pending: {formatDuration(threshold.maxPendingHours)}
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <Zap size={12} /> Active: {formatDuration(threshold.maxInProgressHours)}
-                                        </span>
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
                     </div>
                 </div>
 
@@ -548,11 +412,6 @@ const GovDashboard = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Threshold Modal */}
-            <AnimatePresence>
-                {showThresholdModal && <ThresholdModal />}
-            </AnimatePresence>
         </div>
     );
 };

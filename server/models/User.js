@@ -62,13 +62,13 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin', 'government'],
+    enum: ['user', 'admin', 'government', 'manager'],
     default: 'user'
   },
   department: {
     type: String,
-    enum: ['roads', 'lighting', 'water', 'cleanliness', 'safety', 'obstructions'],
-    required: false
+    enum: ['roads', 'lighting', 'water', 'cleanliness', 'safety', 'obstructions', null],
+    default: null
   },
 
   // Gamification Fields
@@ -126,8 +126,13 @@ const userSchema = new mongoose.Schema({
 // Index for better query performance
 userSchema.index({ email: 1 })
 
-// Pre-save middleware to hash password
+// Pre-save middleware
 userSchema.pre('save', async function (next) {
+  // Handle empty department
+  if (this.department === '') {
+    this.department = null;
+  }
+
   if (!this.isModified('password')) return next()
 
   try {
@@ -140,7 +145,7 @@ userSchema.pre('save', async function (next) {
 })
 
 // Method to compare password
-userSchema.methods.comparePassword = async function (candidatePassword) {
+userSchema.methods.matchPassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password)
 }
 

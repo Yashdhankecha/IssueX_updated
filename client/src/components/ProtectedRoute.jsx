@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 
-const ProtectedRoute = memo(({ children, adminOnly = false, userOnly = false, govOnly = false }) => {
+const ProtectedRoute = memo(({ children, adminOnly = false, userOnly = false, govOnly = false, managerOnly = false }) => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
 
@@ -48,17 +48,21 @@ const ProtectedRoute = memo(({ children, adminOnly = false, userOnly = false, go
     );
   }
 
-  // Check government access if required
-  if (govOnly && user?.role !== 'government') {
+  // Check manager access if required
+  if (managerOnly && user?.role !== 'manager') {
+     return <Navigate to="/dashboard" replace />;
+  }
+
+  // Check government/manager access if required
+  if (govOnly && user?.role !== 'government' && user?.role !== 'manager') {
      return <Navigate to="/dashboard" replace />;
   }
 
   // Redirect Logic based on Role
-  // 1. If user is Admin, they shouldn't be on User pages -> redirect to /admin
-  // 2. If user is Gov, they shouldn't be on generic User pages -> redirect to /gov-dashboard
   if (userOnly) {
      if (isAdmin) return <Navigate to="/admin" replace />;
      if (user?.role === 'government') return <Navigate to="/gov-dashboard" replace />;
+     if (user?.role === 'manager') return <Navigate to="/manager-dashboard" replace />;
   }
 
   // Render children if authenticated and authorized

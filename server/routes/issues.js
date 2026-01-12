@@ -1387,9 +1387,12 @@ router.post('/analyze-image', upload.single('image'), async (req, res) => {
     const analysis = await analyzeImageWithGemini(req.file.path);
 
     if (!analysis) {
-      // Fallback if AI fails
+      // Fallback if AI fails (e.g. Rate Limit or other error)
+      // Return 200 success with empty fields so UI doesn't break
       return res.json({
         success: true,
+        aiFailed: true, // Flag for UI to know AI didn't run
+        message: 'AI analysis unavailable (Rate Limit). Please fill details manually.',
         data: {
           title: '',
           description: '',
@@ -1406,7 +1409,18 @@ router.post('/analyze-image', upload.single('image'), async (req, res) => {
     });
   } catch (error) {
     console.error('Analyze image error:', error);
-    res.status(500).json({ success: false, message: 'Analysis failed' });
+    // Even on crash, return fallback to avoid blocking user
+    res.json({
+      success: true,
+      aiFailed: true,
+      data: {
+        title: '',
+        description: '',
+        category: 'roads',
+        severity: 'medium',
+        tags: []
+      }
+    });
   }
 });
 

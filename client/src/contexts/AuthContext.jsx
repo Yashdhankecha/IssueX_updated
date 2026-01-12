@@ -143,8 +143,28 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success('Welcome back to IssueX!');
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+      
+      // Get token and set headers immediately so we can fetch profile
+      const token = await firebaseUser.getIdToken();
+      localStorage.setItem('token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      // Explicitly fetch user data to ensure we have role for redirection
+      const response = await api.post('/api/auth/login');
+      
+      if (response.data.success) {
+        const userData = response.data.data.user;
+        setUser(userData);
+        setIsAdmin(userData.role === 'admin');
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        toast.success('Welcome back to IssueX!');
+        return { success: true, user: userData };
+      }
+      
+      // Fallback if backend fetch fails but firebase auth worked (rare)
       return { success: true };
     } catch (error) {
       console.error('Login error:', error);
@@ -153,8 +173,6 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
       return { success: false, error: message };
     }
-    // Do NOT set loading to false here on success. 
-    // Let onAuthStateChanged handle it to ensure backend user data is fetched before we show the UI.
   };
 
   const register = async (userData) => {
@@ -327,10 +345,15 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const isGovernment = user?.role === 'government';
+  const isManager = user?.role === 'manager';
+
   const value = {
     user,
     loading,
     isAdmin,
+    isGovernment,
+    isManager,
     login,
     register,
     signUp,
