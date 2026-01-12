@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 
-const ProtectedRoute = memo(({ children, adminOnly = false, userOnly = false, govOnly = false, managerOnly = false }) => {
+const ProtectedRoute = memo(({ children, adminOnly = false, userOnly = false, govOnly = false, managerOnly = false, workerOnly = false }) => {
   const { user, loading, isAdmin } = useAuth();
   const location = useLocation();
 
@@ -52,6 +52,11 @@ const ProtectedRoute = memo(({ children, adminOnly = false, userOnly = false, go
   if (managerOnly && user?.role !== 'manager') {
      return <Navigate to="/dashboard" replace />;
   }
+  
+  // Check worker access if required
+  if (workerOnly && user?.role !== 'field_worker') {
+     return <Navigate to="/dashboard" replace />;
+  }
 
   // Check government/manager access if required
   if (govOnly && user?.role !== 'government' && user?.role !== 'manager') {
@@ -63,6 +68,7 @@ const ProtectedRoute = memo(({ children, adminOnly = false, userOnly = false, go
      if (isAdmin) return <Navigate to="/admin" replace />;
      if (user?.role === 'government') return <Navigate to="/gov-dashboard" replace />;
      if (user?.role === 'manager') return <Navigate to="/manager-dashboard" replace />;
+     if (user?.role === 'field_worker') return <Navigate to="/worker-dashboard" replace />;
   }
 
   // Render children if authenticated and authorized

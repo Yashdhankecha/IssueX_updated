@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ClipboardList, CheckCircle, Clock, AlertTriangle,
-  MapPin, Camera, X, Upload, Loader2, Play, Search, Filter, Timer
+  MapPin, Camera, X, Upload, Loader2, Play, Search, Filter, Timer, Users
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
@@ -31,9 +31,50 @@ const GovIssuesPage = () => {
   // Success State for AI Verification
   const [successData, setSuccessData] = useState(null);
 
+  // Field Workers State
+  const [fieldWorkers, setFieldWorkers] = useState([]);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedWorker, setSelectedWorker] = useState('');
+
   useEffect(() => {
     fetchIssues();
+    fetchFieldWorkers();
   }, [activeTab]);
+
+  const fetchFieldWorkers = async () => {
+    try {
+      const res = await api.get('/api/issues/field-workers');
+      if (res.data.success) {
+        setFieldWorkers(res.data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch workers:', error);
+    }
+  };
+
+  const handleAssignClick = (issue) => {
+    setSelectedIssue(issue);
+    setShowAssignModal(true);
+    setSelectedWorker('');
+  };
+
+  const submitAssignment = async () => {
+    if (!selectedWorker) return;
+    try {
+        const res = await api.put(`/api/issues/${selectedIssue._id}/assign-worker`, {
+            workerId: selectedWorker
+        });
+        if (res.data.success) {
+            toast.success('Worker assigned successfully');
+            fetchIssues();
+            setShowAssignModal(false);
+            setSelectedWorker('');
+            setSelectedIssue(null);
+        }
+    } catch (error) {
+        toast.error('Failed to assign worker');
+    }
+  };
 
   // Handle direct navigation to issue via ID
   useEffect(() => {
@@ -221,8 +262,24 @@ const GovIssuesPage = () => {
                       <span className="truncate">{issue?.location?.address || 'Location unavailable'}</span>
                     </div>
 
+                    {issue.assignedWorker && (
+                        <div className="flex items-center gap-1 text-xs text-purple-600 font-bold mb-3 bg-purple-50 px-2 py-1 rounded-md w-fit">
+                            <Users size={12} />
+                            <span>Assigned to: {issue.assignedWorker.name}</span>
+                        </div>
+                    )}
+
                     {/* Action Buttons */}
                     <div className="flex gap-2">
+                      {!issue.assignedWorker && (issue.status === 'reported' || issue.status === 'in_progress') && (
+                        <button
+                          onClick={() => handleAssignClick(issue)}
+                          className="bg-purple-100 text-purple-700 py-2 px-3 rounded-lg text-sm font-bold hover:bg-purple-200 transition-colors"
+                        >
+                          <Users size={16} />
+                        </button>
+                      )}
+
                       {(activeTab === 'reported' || (activeTab === 'overdue' && issue.status === 'reported')) && (
                         <button
                           onClick={() => handleActionClick(issue, 'start')}
@@ -255,7 +312,73 @@ const GovIssuesPage = () => {
 
       {/* Action Modal */}
       <AnimatePresence>
-        {selectedIssue && (
+        {showAssignModal && selectedIssue && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+              <motion.div 
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                  className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                  onClick={() => setShowAssignModal(false)}
+              />
+              <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative z-10"
+              >
+                  <h2 className="text-xl font-bold text-slate-900 mb-4">Assign Issue</h2>
+                  <p className="text-sm text-slate-500 mb-4">Select a field worker to handle this issue.</p>
+                  
+                  {fieldWorkers.length === 0 ? (
+                      <div className="text-center py-4 bg-slate-50 rounded-xl mb-4">
+                          <p className="text-slate-500 font-medium">No field workers found.</p>
+                          <p className="text-xs text-slate-400 mt-1">Add users with 'field_worker' role.</p>
+                      </div>
+                  ) : (
+                      <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
+                          {fieldWorkers.map(worker => (
+                              <div 
+                                  key={worker._id}
+                                  onClick={() => setSelectedWorker(worker._id)}
+                                  className={`p-3 rounded-xl border cursor-pointer flex items-center gap-3 transition-all ${
+                                      selectedWorker === worker._id 
+                                      ? 'border-purple-500 bg-purple-50' 
+                                      : 'border-slate-100 hover:bg-slate-50'
+                                  }`}
+                              >
+                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                                      selectedWorker === worker._id ? 'bg-purple-200 text-purple-700' : 'bg-slate-200 text-slate-600'
+                                  }`}>
+                                      {worker.name.charAt(0)}
+                                  </div>
+                                  <div>
+                                      <div className="font-bold text-slate-800 text-sm">{worker.name}</div>
+                                      <div className="text-xs text-slate-500">{worker.email}</div>
+                                  </div>
+                              </div>
+                          ))}
+                      </div>
+                  )}
+
+                  <div className="flex gap-3">
+                      <button 
+                          onClick={() => setShowAssignModal(false)}
+                          className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200"
+                      >
+                          Cancel
+                      </button>
+                      <button 
+                          onClick={submitAssignment}
+                          disabled={!selectedWorker}
+                          className="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                          Assign
+                      </button>
+                  </div>
+              </motion.div>
+          </div>
+        )}
+
+        {selectedIssue && !showAssignModal && (
           <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}

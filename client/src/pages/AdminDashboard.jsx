@@ -964,17 +964,19 @@ const AdminDashboard = () => {
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                     <option value="government">Government Official</option>
+                    <option value="manager">City Manager (Supervisor)</option>
+                    <option value="field_worker">Field Worker</option>
                   </select>
                 </div>
 
-                {selectedUser.role === 'government' && (
+                {['government', 'manager', 'field_worker'].includes(selectedUser.role) && (
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-1">Department</label>
                     <select
                       className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
                       value={selectedUser.department || ''}
                       onChange={e => setSelectedUser({ ...selectedUser, department: e.target.value })}
-                      required={selectedUser.role === 'government'}
+                      required={['government', 'manager', 'field_worker'].includes(selectedUser.role)}
                     >
                       <option value="">Select Department</option>
                       <option value="roads">Roads Department</option>

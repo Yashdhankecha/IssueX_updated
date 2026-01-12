@@ -1423,5 +1423,106 @@ router.post('/analyze-image', upload.single('image'), async (req, res) => {
     });
   }
 });
+// @desc    Get assigned issues for field worker
+// @route   GET /api/issues/worker/assigned
+// @access  Private (Field Worker)
+router.get('/worker/assigned', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'field_worker') {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    const issues = await Issue.find({
+      assignedWorker: req.user.id,
+      isActive: true, // Only active issues
+      status: { $in: ['reported', 'in_progress', 'resolved'] } // Show relevant statuses
+    })
+      .sort({ priority: -1, createdAt: -1 }) // Sort by priority then date
+      .populate('location');
+
+    res.json({
+      success: true,
+      data: issues
+    });
+  } catch (error) {
+    console.error('Get worker assignments error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Get field workers for department
+// @route   GET /api/issues/field-workers
+// @access  Private (Government)
+router.get('/field-workers', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'government' && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    const query = { role: 'field_worker' };
+
+    // If government, only get workers from their department
+    if (req.user.role === 'government') {
+      if (!req.user.department) {
+        return res.status(400).json({ success: false, message: 'User has no department assigned' });
+      }
+      query.department = req.user.department;
+    }
+
+    const workers = await User.find(query).select('name email department phone');
+
+    res.json({
+      success: true,
+      data: workers
+    });
+  } catch (error) {
+    console.error('Get field workers error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// @desc    Assign field worker to issue
+// @route   PUT /api/issues/:id/assign-worker
+// @access  Private (Government)
+router.put('/:id/assign-worker', protect, async (req, res) => {
+  try {
+    const { workerId } = req.body;
+    const issue = await Issue.findById(req.params.id);
+
+    if (!issue) return res.status(404).json({ success: false, message: 'Issue not found' });
+
+    // Verify ownership or department match
+    const isDeptMatch = req.user.role === 'government' && req.user.department === issue.category;
+
+    if (!isDeptMatch && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Not authorized to assign workers for this issue' });
+    }
+
+    // Verify worker exists and is in correct department
+    const worker = await User.findById(workerId);
+    if (!worker || worker.role !== 'field_worker') {
+      return res.status(400).json({ success: false, message: 'Invalid field worker' });
+    }
+
+    if (req.user.role === 'government' && worker.department !== req.user.department) {
+      return res.status(400).json({ success: false, message: 'Worker is not in your department' });
+    }
+
+    issue.assignedWorker = workerId;
+
+    // Add to logs if status changes (optional, but good for tracking assignment)
+    // We don't change status here necessarily, just assignment
+
+    await issue.save();
+
+    // Notify Worker (Future implementation)
+    // await Notification.create({...})
+
+    res.json({ success: true, data: issue });
+  } catch (error) {
+    console.error('Assign worker error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
 
 module.exports = router;
