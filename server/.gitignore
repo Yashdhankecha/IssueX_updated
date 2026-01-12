@@ -38,6 +38,9 @@ coverage
 dist/
 build/
 
+
+serviceAccountKey.json
+
 # Dependency directories
 jspm_packages/
 
