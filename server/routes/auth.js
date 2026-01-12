@@ -127,7 +127,9 @@ router.post('/login', protect, async (req, res) => {
           profilePicture: user.profilePicture,
           isEmailVerified: user.isEmailVerified,
           lastLogin: user.lastLogin,
-          role: user.role
+          role: user.role,
+          upvotedIssues: user.upvotedIssues || [],
+          downvotedIssues: user.downvotedIssues || []
         }
       }
     })
@@ -346,7 +348,11 @@ router.get('/me', protect, async (req, res) => {
     res.json({
       success: true,
       data: {
-        user: req.user
+        user: {
+          ...req.user.toObject(),
+          upvotedIssues: req.user.upvotedIssues || [],
+          downvotedIssues: req.user.downvotedIssues || []
+        }
       }
     })
   } catch (error) {
@@ -355,6 +361,62 @@ router.get('/me', protect, async (req, res) => {
       success: false,
       message: 'Server error while fetching user data'
     })
+  }
+})
+
+// @route   GET /api/auth/my-votes
+// @desc    Get all issues the user has voted on with details
+// @access  Private
+router.get('/my-votes', protect, async (req, res) => {
+  try {
+    const Issue = require('../models/Issue');
+
+    // Get user with populated voted issues
+    const user = await User.findById(req.user.id)
+      .populate({
+        path: 'upvotedIssues',
+        select: 'title description category status images createdAt location priority',
+        options: { sort: { createdAt: -1 } }
+      })
+      .populate({
+        path: 'downvotedIssues',
+        select: 'title description category status images createdAt location priority',
+        options: { sort: { createdAt: -1 } }
+      });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Format the voted issues
+    const formatIssue = (issue, voteType) => ({
+      id: issue._id,
+      title: issue.title,
+      description: issue.description,
+      category: issue.category,
+      status: issue.status,
+      priority: issue.priority,
+      image: issue.images?.[0] || null,
+      location: issue.location?.address || 'Unknown location',
+      createdAt: issue.createdAt,
+      voteType: voteType
+    });
+
+    const upvotedIssues = (user.upvotedIssues || []).filter(i => i).map(i => formatIssue(i, 'upvote'));
+    const downvotedIssues = (user.downvotedIssues || []).filter(i => i).map(i => formatIssue(i, 'downvote'));
+
+    res.json({
+      success: true,
+      data: {
+        upvotedIssues,
+        downvotedIssues,
+        totalUpvotes: upvotedIssues.length,
+        totalDownvotes: downvotedIssues.length
+      }
+    });
+  } catch (error) {
+    console.error('Get my votes error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 })
 

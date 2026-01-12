@@ -70,6 +70,15 @@ const userSchema = new mongoose.Schema({
     enum: ['roads', 'lighting', 'water', 'cleanliness', 'safety', 'obstructions'],
     required: false
   },
+  // Track issues the user has voted on
+  upvotedIssues: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Issue'
+  }],
+  downvotedIssues: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Issue'
+  }],
   preferences: {
     notifications: {
       email: { type: Boolean, default: true },

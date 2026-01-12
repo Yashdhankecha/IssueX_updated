@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { auth } from '../firebase';
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut, 
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
   onAuthStateChanged,
   sendPasswordResetEmail,
   sendEmailVerification
@@ -44,26 +44,26 @@ export const AuthProvider = ({ children }) => {
           // This unblocks the UI ("loading too much") while the server wakes up
           const cachedUser = tryGetCachedUser();
           const tempUser = cachedUser || {
-              _id: firebaseUser.uid,
-              name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-              email: firebaseUser.email,
-              role: 'user', // Assume user initially
-              photoURL: firebaseUser.photoURL
+            _id: firebaseUser.uid,
+            name: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+            email: firebaseUser.email,
+            role: 'user', // Assume user initially
+            photoURL: firebaseUser.photoURL
           };
-          
+
           setUser(tempUser);
           setIsAdmin(tempUser.role === 'admin');
           setLoading(false); // <--- UNBLOCK UI IMMEDIATELY
 
           // Fetch fresh user data from backend in background
-          const response = await api.post('/api/auth/login'); 
-          
+          const response = await api.post('/api/auth/login');
+
           if (response.data.success) {
             const userData = response.data.data.user;
 
             if (!firebaseUser.emailVerified) {
-                // Just a toast, don't block
-                toast('Please verify your email address.', { icon: '📧', id: 'email-verification-warning' });
+              // Just a toast, don't block
+              toast('Please verify your email address.', { icon: '📧', id: 'email-verification-warning' });
             }
 
             setUser(userData);
@@ -72,22 +72,22 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (error) {
           console.error('Error fetching user data:', error);
-          
-           if (error.response?.status === 401) {
-               const errorMessage = error.response?.data?.message || '';
-               if (errorMessage.includes('User not found')) {
-                   console.log('User not found in MongoDB yet. Waiting for registration...');
-               } else {
-                   toast.error('Session expired. Please login again.');
-                   signOut(auth);
-                   setUser(null);
-                   localStorage.removeItem('token');
-                   localStorage.removeItem('user');
-               }
-           } else {
-               // Silent fail for network/server errors if we have tempUser
-               console.log('Running in offline/optimistic mode');
-           }
+
+          if (error.response?.status === 401) {
+            const errorMessage = error.response?.data?.message || '';
+            if (errorMessage.includes('User not found')) {
+              console.log('User not found in MongoDB yet. Waiting for registration...');
+            } else {
+              toast.error('Session expired. Please login again.');
+              signOut(auth);
+              setUser(null);
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+            }
+          } else {
+            // Silent fail for network/server errors if we have tempUser
+            console.log('Running in offline/optimistic mode');
+          }
         }
       } else {
         setUser(null);
@@ -126,10 +126,10 @@ export const AuthProvider = ({ children }) => {
           // Clean up generic Firebase errors, e.g., "Firebase: Error (auth/some-error)."
           // Extracts "some-error" or keeps specific message parts if readable
           // But usually better to just show a generic message for unknown codes to avoid exposing internals to non-devs
-          return 'Authentication failed. Please try again.'; 
+          return 'Authentication failed. Please try again.';
       }
     }
-    
+
     // Handle weird string formats if they slip through
     if (typeof error === 'string') return error;
 
@@ -149,7 +149,7 @@ export const AuthProvider = ({ children }) => {
       toast.error(message);
       setLoading(false);
       return { success: false, error: message };
-    } 
+    }
     // Do NOT set loading to false here on success. 
     // Let onAuthStateChanged handle it to ensure backend user data is fetched before we show the UI.
   };
@@ -158,13 +158,13 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       console.log('Starting registration flow:', { email: userData.email, name: userData.fullName });
-      
+
       // 1. Create user in Firebase
       console.log('Creating Firebase user...');
       const userCredential = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
       const firebaseUser = userCredential.user;
       console.log('Firebase user created:', firebaseUser.uid);
-      
+
       // Send verification email
       console.log('Sending verification email...');
       await sendEmailVerification(firebaseUser);
@@ -172,7 +172,7 @@ export const AuthProvider = ({ children }) => {
       console.log('Getting ID token...');
       const token = await firebaseUser.getIdToken();
       localStorage.setItem('token', token);
-      
+
       // 2. Set API header for the subsequent request
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
@@ -185,40 +185,40 @@ export const AuthProvider = ({ children }) => {
       console.log('Registration response:', response.data);
 
       if (response.data.success) {
-         const newUser = response.data.data.user;
-         setUser(newUser); // Manually set user state since onAuthStateChanged might have missed it
-         localStorage.setItem('user', JSON.stringify(newUser));
-         toast.success('Account created! Please check your email to verify your account.');
-         setLoading(false);
-         return { success: true };
+        const newUser = response.data.data.user;
+        setUser(newUser); // Manually set user state since onAuthStateChanged might have missed it
+        localStorage.setItem('user', JSON.stringify(newUser));
+        toast.success('Account created! Please check your email to verify your account.');
+        setLoading(false);
+        return { success: true };
       } else {
         throw new Error(response.data.message || 'Registration failed');
       }
     } catch (error) {
-       // If MongoDB creation fails, we should probably delete the Firebase user to avoid orphaned accounts
-       // or just let them retry.
+      // If MongoDB creation fails, we should probably delete the Firebase user to avoid orphaned accounts
+      // or just let them retry.
       console.error('Registration error:', error);
       if (error.response) {
-          console.error('Registration server error:', error.response.data);
+        console.error('Registration server error:', error.response.data);
       }
-      
+
       const message = getFriendlyErrorMessage(error);
       toast.error(message);
       setLoading(false);
       return { success: false, error: message };
-    } 
+    }
     // Similar to login, let onAuthStateChanged handle loading=false on success
   };
 
 
   // Alias for backward compatibility if names differ
-  const signUp = register; 
+  const signUp = register;
 
   const verifyEmail = async (email, otp) => {
-     // Firebase handles email verification differently (link based)
-     // kept for interface compatibility
-      toast.success('Feature not implemented in Firebase version yet');
-      return { success: true };
+    // Firebase handles email verification differently (link based)
+    // kept for interface compatibility
+    toast.success('Feature not implemented in Firebase version yet');
+    return { success: true };
   };
 
   const logout = async () => {
@@ -240,7 +240,7 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (updates) => {
     try {
       const response = await api.put('/api/auth/profile', updates);
-      
+
       if (response.data.success) {
         const updatedUser = response.data.data.user;
         setUser(updatedUser);
@@ -260,7 +260,7 @@ export const AuthProvider = ({ children }) => {
   const updatePreferences = async (preferences) => {
     try {
       const response = await api.put('/api/auth/preferences', preferences);
-      
+
       if (response.data.success) {
         const updatedUser = response.data.data.user;
         setUser(updatedUser);
@@ -295,7 +295,7 @@ export const AuthProvider = ({ children }) => {
     toast.error('Please use the link sent to your email to reset password.');
     return { success: false, message: 'Use email link' };
   };
-  
+
   // checkAuthStatus is now irrelevant as onAuthStateChanged handles it, 
   // but kept for compatibility if called directly
   const checkEmailVerification = async () => {
@@ -308,6 +308,20 @@ export const AuthProvider = ({ children }) => {
       return auth.currentUser.emailVerified;
     }
     return false;
+  };
+
+  // Fetch user's voted issues
+  const getMyVotes = async () => {
+    try {
+      const response = await api.get('/api/auth/my-votes');
+      if (response.data.success) {
+        return response.data.data;
+      }
+      return { upvotedIssues: [], downvotedIssues: [], totalUpvotes: 0, totalDownvotes: 0 };
+    } catch (error) {
+      console.error('Error fetching votes:', error);
+      return { upvotedIssues: [], downvotedIssues: [], totalUpvotes: 0, totalDownvotes: 0 };
+    }
   };
 
   const value = {
@@ -325,6 +339,7 @@ export const AuthProvider = ({ children }) => {
     forgotPassword,
     resetPassword,
     checkEmailVerification,
+    getMyVotes,
   };
 
   return (

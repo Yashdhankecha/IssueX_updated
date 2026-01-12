@@ -231,6 +231,11 @@ router.get('/', optionalAuth, async (req, res) => {
       voteCount: issue.voteCount,
       upvotes: (issue.upvotes && Array.isArray(issue.upvotes)) ? issue.upvotes.length : 0,
       downvotes: (issue.downvotes && Array.isArray(issue.downvotes)) ? issue.downvotes.length : 0,
+      // Add user's vote status
+      userVote: req.user ? (
+        (issue.upvotes && issue.upvotes.some(id => id._id ? id._id.toString() === req.user.id : id.toString() === req.user.id)) ? 'upvote' :
+          (issue.downvotes && issue.downvotes.some(id => id._id ? id._id.toString() === req.user.id : id.toString() === req.user.id)) ? 'downvote' : null
+      ) : null,
       commentCount: issue.commentCount,
       comments: (issue.comments && Array.isArray(issue.comments)) ? issue.comments.map(comment => ({
         id: comment._id,
@@ -476,6 +481,20 @@ router.get('/:id', optionalAuth, async (req, res) => {
         createdAt: comment.createdAt,
         user: comment.user ? { name: comment.user.name } : { name: 'Unknown' } // Hide email in public comments
       }));
+    }
+
+    // Add upvotes/downvotes counts
+    issueObj.upvotes = issue.upvotes?.length || 0;
+    issueObj.downvotes = issue.downvotes?.length || 0;
+
+    // Add user's vote status
+    if (req.user) {
+      const userId = req.user.id;
+      const hasUpvoted = issue.upvotes?.some(id => id._id ? id._id.toString() === userId : id.toString() === userId);
+      const hasDownvoted = issue.downvotes?.some(id => id._id ? id._id.toString() === userId : id.toString() === userId);
+      issueObj.userVote = hasUpvoted ? 'upvote' : (hasDownvoted ? 'downvote' : null);
+    } else {
+      issueObj.userVote = null;
     }
 
     res.json({
@@ -903,7 +922,6 @@ router.post('/:id/vote', [
   protect,
   body('voteType', 'Vote type is required').isIn(['upvote', 'downvote'])
 ], async (req, res) => {
-  // ... existing vote logic ...
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -913,9 +931,101 @@ router.post('/:id/vote', [
     const issue = await Issue.findById(req.params.id);
     if (!issue) return res.status(404).json({ success: false, message: 'Issue not found' });
 
-    await issue.vote(req.user.id, req.body.voteType);
-    res.json({ success: true, message: 'Vote recorded' });
+    const userId = req.user.id;
+    const issueId = issue._id;
+    const { voteType } = req.body;
+
+    // Get the user to update their vote history
+    const User = require('../models/User');
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    // Check if user has already voted in the same way
+    const hasUpvoted = issue.upvotes.some(id => id.toString() === userId);
+    const hasDownvoted = issue.downvotes.some(id => id.toString() === userId);
+
+    // Handle vote removal (toggle behavior)
+    if (voteType === 'upvote' && hasUpvoted) {
+      // Remove upvote (user clicked upvote again)
+      issue.upvotes = issue.upvotes.filter(id => id.toString() !== userId);
+      // Remove from user's upvotedIssues
+      user.upvotedIssues = user.upvotedIssues.filter(id => id.toString() !== issueId.toString());
+    } else if (voteType === 'downvote' && hasDownvoted) {
+      // Remove downvote (user clicked downvote again)
+      issue.downvotes = issue.downvotes.filter(id => id.toString() !== userId);
+      // Remove from user's downvotedIssues
+      user.downvotedIssues = user.downvotedIssues.filter(id => id.toString() !== issueId.toString());
+    } else if (voteType === 'upvote') {
+      // Add upvote
+      if (!hasUpvoted) {
+        issue.upvotes.push(userId);
+        // Add to user's upvotedIssues if not already there
+        if (!user.upvotedIssues.some(id => id.toString() === issueId.toString())) {
+          user.upvotedIssues.push(issueId);
+        }
+      }
+      // Remove any existing downvote
+      if (hasDownvoted) {
+        issue.downvotes = issue.downvotes.filter(id => id.toString() !== userId);
+        user.downvotedIssues = user.downvotedIssues.filter(id => id.toString() !== issueId.toString());
+      }
+    } else if (voteType === 'downvote') {
+      // Add downvote
+      if (!hasDownvoted) {
+        issue.downvotes.push(userId);
+        // Add to user's downvotedIssues if not already there
+        if (!user.downvotedIssues.some(id => id.toString() === issueId.toString())) {
+          user.downvotedIssues.push(issueId);
+        }
+      }
+      // Remove any existing upvote
+      if (hasUpvoted) {
+        issue.upvotes = issue.upvotes.filter(id => id.toString() !== userId);
+        user.upvotedIssues = user.upvotedIssues.filter(id => id.toString() !== issueId.toString());
+      }
+    }
+
+    // Calculate new vote count
+    const voteCount = issue.upvotes.length - issue.downvotes.length;
+
+    // Update priority based on vote count
+    // More upvotes = higher priority
+    let newPriority = 'medium';
+    if (voteCount >= 10) {
+      newPriority = 'urgent';
+    } else if (voteCount >= 5) {
+      newPriority = 'high';
+    } else if (voteCount >= 0) {
+      newPriority = 'medium';
+    } else {
+      newPriority = 'low';
+    }
+
+    // Only update priority if it has changed
+    if (issue.priority !== newPriority) {
+      issue.priority = newPriority;
+    }
+
+    // Save both issue and user
+    await Promise.all([issue.save(), user.save()]);
+
+    // Check updated vote status
+    const userHasUpvoted = issue.upvotes.some(id => id.toString() === userId);
+    const userHasDownvoted = issue.downvotes.some(id => id.toString() === userId);
+
+    res.json({
+      success: true,
+      message: 'Vote recorded',
+      data: {
+        voteCount: issue.upvotes.length - issue.downvotes.length,
+        upvotes: issue.upvotes.length,
+        downvotes: issue.downvotes.length,
+        priority: issue.priority,
+        userVote: userHasUpvoted ? 'upvote' : (userHasDownvoted ? 'downvote' : null)
+      }
+    });
   } catch (err) {
+    console.error('Vote error:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
