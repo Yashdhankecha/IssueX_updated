@@ -1,0 +1,5 @@
+{
+    "css.validate.enable": false,
+    "scss.validate.enable": false,
+    "less.validate.enable": false
+}
