@@ -278,30 +278,26 @@ const ProfilePage = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="space-y-6"
+              className="space-y-4"
             >
-              {/* Votes Summary */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-2xl border border-green-100">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                      <ArrowBigUp size={24} className="text-green-600 fill-green-600" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-black text-green-600">{votedIssues.totalUpvotes}</div>
-                      <div className="text-xs font-bold text-green-500 uppercase tracking-wide">Upvotes</div>
-                    </div>
+              {/* Votes Summary - Compact */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-emerald-50 p-4 rounded-xl flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <ArrowBigUp size={20} className="text-emerald-600" />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold text-emerald-600">{votedIssues.totalUpvotes}</div>
+                    <div className="text-xs text-emerald-500">Upvotes</div>
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-red-50 to-rose-50 p-5 rounded-2xl border border-red-100">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
-                      <ArrowBigDown size={24} className="text-red-600 fill-red-600" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-black text-red-600">{votedIssues.totalDownvotes}</div>
-                      <div className="text-xs font-bold text-red-500 uppercase tracking-wide">Downvotes</div>
-                    </div>
+                <div className="bg-red-50 p-4 rounded-xl flex items-center gap-3">
+                  <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                    <ArrowBigDown size={20} className="text-red-600" />
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold text-red-600">{votedIssues.totalDownvotes}</div>
+                    <div className="text-xs text-red-500">Downvotes</div>
                   </div>
                 </div>
               </div>
@@ -309,31 +305,25 @@ const ProfilePage = () => {
               {/* Upvoted Issues */}
               {votedIssues.upvotedIssues?.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <ArrowBigUp size={18} className="text-green-500" /> Issues I Upvoted
-                  </h3>
-                  <div className="space-y-3">
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 px-1">Upvoted</p>
+                  <div className="space-y-2">
                     {votedIssues.upvotedIssues.map(issue => (
-                      <Link to={`/issue/${issue.id}`} key={issue.id} className="block group">
-                        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-green-200 transition-all flex gap-3 items-center">
-                          <div className="w-12 h-12 rounded-xl bg-green-50 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                      <Link to={`/issue/${issue.id}`} key={issue.id} className="block">
+                        <div className="bg-white p-3 rounded-xl border border-slate-100 flex gap-3 items-center active:scale-[0.99] transition-transform">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-emerald-50 overflow-hidden flex-shrink-0 flex items-center justify-center">
                             {issue.image ? (
                               <img src={issue.image} className="w-full h-full object-cover" alt="" />
                             ) : (
-                              <ArrowBigUp size={24} className="text-green-500 fill-green-500" />
+                              <ArrowBigUp size={18} className="text-emerald-500" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className={`w-2 h-2 rounded-full ${issue.status === 'resolved' ? 'bg-green-500' : issue.status === 'in_progress' ? 'bg-amber-500' : 'bg-red-500'}`} />
-                              <span className="text-xs font-bold uppercase text-slate-400">{issue.category}</span>
-                            </div>
-                            <h4 className="font-bold text-slate-900 line-clamp-1 group-hover:text-green-600 transition-colors">{issue.title}</h4>
-                            <p className="text-xs text-slate-500 line-clamp-1">{issue.location}</p>
+                            <h4 className="font-medium text-slate-900 text-sm line-clamp-1">{issue.title}</h4>
+                            <p className="text-xs text-slate-400 line-clamp-1">{issue.location}</p>
                           </div>
-                          <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                            👍 Upvoted
-                          </div>
+                          <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium shrink-0">
+                            ↑
+                          </span>
                         </div>
                       </Link>
                     ))}
@@ -344,31 +334,25 @@ const ProfilePage = () => {
               {/* Downvoted Issues */}
               {votedIssues.downvotedIssues?.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <ArrowBigDown size={18} className="text-red-500" /> Issues I Downvoted
-                  </h3>
-                  <div className="space-y-3">
+                  <p className="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2 px-1">Downvoted</p>
+                  <div className="space-y-2">
                     {votedIssues.downvotedIssues.map(issue => (
-                      <Link to={`/issue/${issue.id}`} key={issue.id} className="block group">
-                        <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:border-red-200 transition-all flex gap-3 items-center">
-                          <div className="w-12 h-12 rounded-xl bg-red-50 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                      <Link to={`/issue/${issue.id}`} key={issue.id} className="block">
+                        <div className="bg-white p-3 rounded-xl border border-slate-100 flex gap-3 items-center active:scale-[0.99] transition-transform">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-red-50 overflow-hidden flex-shrink-0 flex items-center justify-center">
                             {issue.image ? (
                               <img src={issue.image} className="w-full h-full object-cover" alt="" />
                             ) : (
-                              <ArrowBigDown size={24} className="text-red-500 fill-red-500" />
+                              <ArrowBigDown size={18} className="text-red-500" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className={`w-2 h-2 rounded-full ${issue.status === 'resolved' ? 'bg-green-500' : issue.status === 'in_progress' ? 'bg-amber-500' : 'bg-red-500'}`} />
-                              <span className="text-xs font-bold uppercase text-slate-400">{issue.category}</span>
-                            </div>
-                            <h4 className="font-bold text-slate-900 line-clamp-1 group-hover:text-red-600 transition-colors">{issue.title}</h4>
-                            <p className="text-xs text-slate-500 line-clamp-1">{issue.location}</p>
+                            <h4 className="font-medium text-slate-900 text-sm line-clamp-1">{issue.title}</h4>
+                            <p className="text-xs text-slate-400 line-clamp-1">{issue.location}</p>
                           </div>
-                          <div className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold">
-                            👎 Downvoted
-                          </div>
+                          <span className="px-2 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-medium shrink-0">
+                            ↓
+                          </span>
                         </div>
                       </Link>
                     ))}
@@ -378,13 +362,13 @@ const ProfilePage = () => {
 
               {/* Empty State */}
               {votedIssues.upvotedIssues?.length === 0 && votedIssues.downvotedIssues?.length === 0 && (
-                <div className="text-center py-20">
-                  <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
-                    <ThumbsUp size={32} />
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3 text-slate-300">
+                    <ThumbsUp size={24} />
                   </div>
-                  <h3 className="text-lg font-bold text-slate-900">No votes yet</h3>
-                  <p className="text-slate-500 mb-6">You haven't voted on any issues yet. Vote to help prioritize issues!</p>
-                  <Link to="/issues" className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors">
+                  <h3 className="font-medium text-slate-900 mb-1">No votes yet</h3>
+                  <p className="text-sm text-slate-500 mb-4">Vote on issues to help prioritize them</p>
+                  <Link to="/issues" className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium">
                     Browse Issues
                   </Link>
                 </div>
@@ -396,22 +380,22 @@ const ProfilePage = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm"
+              className="bg-white rounded-2xl p-4 sm:p-6 border border-slate-100"
             >
-              <div className="relative border-l-2 border-slate-100 pl-8 space-y-8 py-2">
+              <div className="relative border-l-2 border-slate-100 pl-6 space-y-6 py-2">
                 {userIssues.slice(0, 5).map(issue => (
                   <div key={issue._id} className="relative">
-                    <span className={`absolute -left-[39px] top-1 w-4 h-4 rounded-full border-4 border-white ${issue.status === 'resolved' ? 'bg-green-500' : 'bg-blue-500'}`} />
-                    <p className="text-sm text-slate-500 mb-1">
-                      You reported <span className="font-bold text-slate-800">"{issue.title}"</span> in {issue.location?.town || 'your area'}
+                    <span className={`absolute -left-[29px] top-1 w-3 h-3 rounded-full border-2 border-white ${issue.status === 'resolved' ? 'bg-green-500' : 'bg-blue-500'}`} />
+                    <p className="text-sm text-slate-600 mb-0.5">
+                      Reported <span className="font-medium text-slate-900">"{issue.title}"</span>
                     </p>
-                    <span className="text-xs font-bold text-slate-400">{formatDistanceToNow(new Date(issue.createdAt))} ago</span>
+                    <span className="text-xs text-slate-400">{formatDistanceToNow(new Date(issue.createdAt))} ago</span>
                   </div>
                 ))}
                 <div className="relative">
-                  <span className="absolute -left-[39px] top-1 w-4 h-4 rounded-full border-4 border-white bg-slate-300" />
-                  <p className="text-sm text-slate-800 font-bold">Joined the Platform</p>
-                  <span className="text-xs font-bold text-slate-400">{new Date(user?.createdAt).toLocaleDateString()}</span>
+                  <span className="absolute -left-[29px] top-1 w-3 h-3 rounded-full border-2 border-white bg-slate-300" />
+                  <p className="text-sm font-medium text-slate-900">Joined the Platform</p>
+                  <span className="text-xs text-slate-400">{new Date(user?.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
             </motion.div>
