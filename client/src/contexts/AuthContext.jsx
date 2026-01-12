@@ -60,6 +60,9 @@ export const AuthProvider = ({ children }) => {
           
           if (response.data.success) {
             const userData = response.data.data.user;
+            
+            // Ensures we have the latest gamification stats
+            console.log('User data loaded:', userData.impactScore);
 
             if (!firebaseUser.emailVerified) {
                 // Just a toast, don't block

@@ -81,7 +81,7 @@ const ProfilePage = () => {
   const getStats = () => {
      const total = userIssues.length;
      const resolved = userIssues.filter(i => i.status === 'resolved').length;
-     const impactScore = (total * 10) + (resolved * 50); 
+     const impactScore = user?.impactScore || 0;
      return { total, resolved, impactScore };
   };
 
@@ -152,11 +152,6 @@ const ProfilePage = () => {
                                 </p>
                                 
                                 <div className="flex flex-wrap justify-center md:justify-start gap-3">
-                                    <div className="px-4 py-2 bg-amber-50 rounded-xl border border-amber-100 flex items-center gap-2">
-                                        <Sparkles size={16} className="text-amber-500 fill-amber-500" />
-                                        <span className="font-bold text-slate-700">{stats.impactScore}</span>
-                                        <span className="text-xs text-slate-400 font-bold uppercase tracking-wide">Impact Score</span>
-                                    </div>
                                     <div className="px-4 py-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-2">
                                         <Calendar size={16} className="text-slate-400" />
                                         <span className="text-sm font-bold text-slate-600">Joined {new Date(user?.createdAt).toLocaleDateString()}</span>

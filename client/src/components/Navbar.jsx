@@ -36,6 +36,7 @@ const Navbar = ({ onMenuClick }) => {
   let navigation = [
     { name: 'Home', href: '/dashboard', icon: Home },
     { name: 'Map', href: '/map', icon: Map },
+    { name: 'Impact', href: '/impact', icon: Sparkles },
     { name: 'Report', href: '/report', icon: Plus },
   ];
 

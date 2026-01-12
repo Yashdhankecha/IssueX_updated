@@ -70,6 +70,25 @@ const userSchema = new mongoose.Schema({
     enum: ['roads', 'lighting', 'water', 'cleanliness', 'safety', 'obstructions'],
     required: false
   },
+  // Gamification Fields
+  impactScore: {
+    type: Number,
+    default: 0
+  },
+  level: {
+    type: Number,
+    default: 1,
+    min: 1,
+    max: 5
+  },
+  badges: [{
+    type: String
+  }],
+  redeemedRewards: [{
+    rewardId: String,
+    redeemedAt: { type: Date, default: Date.now },
+    code: String
+  }],
   preferences: {
     notifications: {
       email: { type: Boolean, default: true },

@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const { upload } = require('../config/cloudinary');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const axios = require('axios');
+const { addPoints } = require('../utils/gamification');
 
 // Initialize Gemini AI (Graceful fallback if no key)
 const genAI = process.env.GEMINI_API_KEY
@@ -647,6 +648,16 @@ router.post('/', [
 
     console.log('Issue saved successfully:', issue._id);
 
+    // GAMIFICATION: Points for reporting
+    if (req.user) {
+      await addPoints(req.user.id, 'REPORT_ISSUE');
+
+      // Points for AI verification if it happened
+      if (aiTags.includes('verified-by-ai')) {
+        await addPoints(req.user.id, 'VERIFIED_ISSUE');
+      }
+    }
+
     // NOTIFICATION: Notify the assigned Department
     if (assignedUser) {
       try {
@@ -888,6 +899,9 @@ router.post('/:id/comments', [
       message: 'Comment added successfully',
       data: issue.comments && Array.isArray(issue.comments) ? issue.comments[issue.comments.length - 1] : null
     });
+
+    // GAMIFICATION: Points for commenting
+    await addPoints(req.user.id, 'COMMENT');
   } catch (error) {
     console.error('Add comment error:', error);
     res.status(500).json({
@@ -915,6 +929,14 @@ router.post('/:id/vote', [
 
     await issue.vote(req.user.id, req.body.voteType);
     res.json({ success: true, message: 'Vote recorded' });
+
+    // GAMIFICATION: Points for receiving upvote
+    if (req.body.voteType === 'upvote' && issue.reportedBy) {
+      // Avoid self-voting points if needed, but for now simple
+      if (issue.reportedBy.toString() !== req.user.id) {
+        await addPoints(issue.reportedBy, 'UPVOTE_RECEIVED');
+      }
+    }
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server error' });
   }
@@ -985,6 +1007,11 @@ router.put('/:id/resolve', [protect, upload.single('image')], async (req, res) =
     issue.aiResolutionScore = aiScore;
 
     await issue.save();
+
+    // GAMIFICATION: Points for resolution (Awarded to Reporter)
+    if (issue.reportedBy) {
+      await addPoints(issue.reportedBy, 'RESOLVE_ISSUE');
+    }
 
     // Notify Reporter
     if (issue.reportedBy) {
@@ -1098,6 +1125,9 @@ router.put('/:id/approve-fix', protect, async (req, res) => {
     }
 
     res.json({ success: true, data: issue });
+
+    // GAMIFICATION: Points for confirming resolution
+    await addPoints(req.user.id, 'CONFIRM_RESOLUTION');
   } catch (error) {
     console.error('Approve fix error:', error);
     res.status(500).json({ success: false, message: 'Server error' });

@@ -37,6 +37,7 @@ import GovIssuesPage from './pages/GovIssuesPage';
 import GovMapPage from './pages/GovMapPage';
 import GovProfilePage from './pages/GovProfilePage';
 import GovNotificationPage from './pages/GovNotificationPage';
+import GamificationPage from './pages/GamificationPage';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -207,6 +208,14 @@ function App() {
                       <ProtectedRoute>
                         <Layout>
                           <SettingsPage />
+                        </Layout>
+                      </ProtectedRoute>
+                    } />
+
+                    <Route path="/impact" element={
+                      <ProtectedRoute userOnly>
+                        <Layout>
+                          <GamificationPage />
                         </Layout>
                       </ProtectedRoute>
                     } />

@@ -106,7 +106,7 @@ const MapPage = () => {
         center={viewState.center} 
         zoom={viewState.zoom} 
         zoomControl={false} 
-        className="absolute inset-0 z-0 outline-none"
+        className="absolute inset-0 z-0 outline-none pb-20 lg:pb-0"
       >
         <TileLayer 
             url={tileLayers[mapTheme]} 

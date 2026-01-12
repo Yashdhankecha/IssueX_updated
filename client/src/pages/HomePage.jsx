@@ -20,12 +20,14 @@ import {
 import { useIssue } from '../contexts/IssueContext';
 import { useLocation } from '../contexts/LocationContext';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
 import IssueCard from '../components/IssueCard';
 
 const HomePage = () => {
   const { filteredIssues, loading, getIssueStats, filters, updateFilters } = useIssue();
   const { selectedLocation } = useLocation();
   const { user } = useAuth();
+  const { unreadCount } = useNotification();
   const stats = getIssueStats();
   const [searchQuery, setSearchQuery] = useState('');
   const [greeting, setGreeting] = useState('Welcome back');
@@ -138,7 +140,15 @@ const HomePage = () => {
                </div>
             </div>
          </div>
-         <div></div>
+
+         <div className="flex items-center space-x-2">
+            <Link to="/notifications" className="p-2 text-slate-600 relative">
+               <Bell size={24} />
+               {unreadCount > 0 && (
+                   <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+               )}
+            </Link>
+         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 lg:py-8 space-y-6 lg:space-y-10">

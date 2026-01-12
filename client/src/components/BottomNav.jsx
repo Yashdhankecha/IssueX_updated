@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Map, Plus, User, Bell, BarChart3, AlertCircle, Users, LogOut } from 'lucide-react';
+import { Home, Map, Plus, User, Bell, BarChart3, AlertCircle, Users, LogOut, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 
@@ -28,7 +28,7 @@ const BottomNav = () => {
     { name: 'Home', href: '/dashboard', icon: Home },
     { name: 'Map', href: '/map', icon: Map },
     { name: 'Report', href: '/report', icon: Plus, isFab: true },
-    { name: 'Alerts', href: '/notifications', icon: Bell, badge: unreadCount },
+    { name: 'Impact', href: '/impact', icon: Sparkles },
     { name: 'Profile', href: '/profile', icon: User },
   ];
 
