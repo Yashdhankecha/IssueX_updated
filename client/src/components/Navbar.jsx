@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Menu, 
-  X, 
-  MapPin, 
-  User, 
-  Settings, 
-  LogOut, 
+import {
+  Menu,
+  X,
+  MapPin,
+  User,
+  Settings,
+  LogOut,
   Bell,
   Plus,
   Map,
@@ -71,9 +71,9 @@ const Navbar = ({ onMenuClick }) => {
           {/* Logo and Brand */}
           <div className="flex items-center">
 
-            
+
             <Link to="/" className="flex items-center space-x-3">
-              <motion.div 
+              <motion.div
                 className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg"
                 whileHover={{ scale: 1.05, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 300 }}
@@ -92,11 +92,10 @@ const Navbar = ({ onMenuClick }) => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
-                    isActive(item.href)
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
-                  }`}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${isActive(item.href)
+                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                    : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50'
+                    }`}
                 >
                   <Icon size={16} />
                   <span>{item.name}</span>
@@ -110,7 +109,7 @@ const Navbar = ({ onMenuClick }) => {
             {/* Location Indicator - Only show for non-admin users */}
             {!isAdmin && (
               <div className="relative">
-                <button 
+                <button
                   onClick={() => setRadiusOpen(!radiusOpen)}
                   className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 hover:shadow-md transition-all"
                 >
@@ -139,9 +138,8 @@ const Navbar = ({ onMenuClick }) => {
                             updateFilters({ radius: r });
                             setRadiusOpen(false);
                           }}
-                          className={`w-full text-left px-4 py-3 text-sm flex items-center justify-between hover:bg-green-50 transition-colors ${
-                            radius === r ? 'text-green-600 font-bold bg-green-50/50' : 'text-gray-600'
-                          }`}
+                          className={`w-full text-left px-4 py-3 text-sm flex items-center justify-between hover:bg-green-50 transition-colors ${radius === r ? 'text-green-600 font-bold bg-green-50/50' : 'text-gray-600'
+                            }`}
                         >
                           <span>{r} km</span>
                           {radius === r && <MapPin size={14} />}
@@ -153,7 +151,7 @@ const Navbar = ({ onMenuClick }) => {
               </div>
             )}
 
-        
+
 
             {/* User Menu */}
             <div className="relative">
@@ -163,9 +161,9 @@ const Navbar = ({ onMenuClick }) => {
               >
                 <div className="w-8 h-8 rounded-xl overflow-hidden shadow-lg border border-slate-200">
                   {user?.profilePicture ? (
-                    <img 
-                      src={user.profilePicture.startsWith('http') ? user.profilePicture : `${import.meta.env.VITE_APP_API_URL || 'http://localhost:5000'}${user.profilePicture}`} 
-                      alt="Profile" 
+                    <img
+                      src={user.profilePicture.startsWith('http') ? user.profilePicture : `${import.meta.env.VITE_APP_API_URL || 'http://localhost:5000'}${user.profilePicture}`}
+                      alt="Profile"
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -196,7 +194,7 @@ const Navbar = ({ onMenuClick }) => {
                         {user?.email}
                       </p>
                     </div>
-                    
+
                     {isAdmin ? (
                       <>
                         <div className="px-4 py-2 text-xs font-semibold text-blue-600 uppercase tracking-wide">
@@ -224,7 +222,7 @@ const Navbar = ({ onMenuClick }) => {
                           <User size={16} />
                           <span>Profile</span>
                         </Link>
-                        
+
                         <Link
                           to={isGovernment ? "/gov-notifications" : "/notifications"}
                           className="flex items-center space-x-3 px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 transition-all duration-200"
@@ -251,7 +249,7 @@ const Navbar = ({ onMenuClick }) => {
                         )}
                       </>
                     )}
-                    
+
                     <button
                       onClick={() => {
                         logout();

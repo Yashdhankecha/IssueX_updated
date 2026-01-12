@@ -3,9 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { useDropzone } from 'react-dropzone';
-import { 
-  ArrowLeft, MapPin, Camera, X, CheckCircle, 
-  Loader2, Sparkles, AlertTriangle, Zap, Droplets, 
+import {
+  ArrowLeft, MapPin, Camera, X, CheckCircle,
+  Loader2, Sparkles, AlertTriangle, Zap, Droplets,
   Truck, Trees, Shield, ChevronRight, Edit3
 } from 'lucide-react';
 import { useIssue } from '../contexts/IssueContext';
@@ -17,7 +17,7 @@ const ReportIssuePage = () => {
   const navigate = useNavigate();
   const { createIssue } = useIssue();
   const { selectedLocation, getAddressFromCoords } = useLocation();
-  
+
   // States
   const [step, setStep] = useState('upload'); // 'upload', 'analyzing', 'review'
   const [imageFile, setImageFile] = useState(null);
@@ -83,18 +83,18 @@ const ReportIssuePage = () => {
 
         // CHECK: is relevant?
         if (data.is_relevant === false) {
-           toast.error('No civic issue detected in this image. Please upload a valid issue photo.', { 
-             icon: '🚫',
-             duration: 4000
-           });
-           setStep('upload');
-           return;
+          toast.error('No civic issue detected in this image. Please upload a valid issue photo.', {
+            icon: '🚫',
+            duration: 4000
+          });
+          setStep('upload');
+          return;
         }
 
         // CHECK: proper issue type
         const validCategories = categories.map(c => c.value);
         if (data.category && !validCategories.includes(data.category)) {
-          toast.error('Issue not belongs to any listed issue/department', { 
+          toast.error('Issue not belongs to any listed issue/department', {
             icon: '🚫',
             duration: 4000
           });
@@ -122,8 +122,8 @@ const ReportIssuePage = () => {
 
   const onSubmit = async (data) => {
     if (!selectedLocation) {
-        toast.error('Location is missing!');
-        return;
+      toast.error('Location is missing!');
+      return;
     }
 
     setIsSubmitting(true);
@@ -167,7 +167,7 @@ const ReportIssuePage = () => {
 
       <div className="flex-1 w-full max-w-[100vw] px-6 pb-24 relative z-10 flex flex-col justify-center box-border">
         <AnimatePresence mode="wait">
-          
+
           {/* STEP 1: UPLOAD */}
           {step === 'upload' && (
             <motion.div
@@ -177,24 +177,23 @@ const ReportIssuePage = () => {
               exit={{ opacity: 0, scale: 0.95 }}
               className="flex flex-col items-center text-center space-y-8"
             >
-               <div className="space-y-2">
-                 <h1 className="text-3xl font-bold text-slate-900">What did you spot?</h1>
-                 <p className="text-slate-500">Upload a photo and let our AI handle the rest.</p>
-               </div>
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold text-slate-900">What did you spot?</h1>
+                <p className="text-slate-500">Upload a photo and let our AI handle the rest.</p>
+              </div>
 
-               <div 
-                  {...getRootProps()} 
-                  className={`w-full aspect-[4/5] max-h-[500px] border-4 border-dashed rounded-[2.5rem] flex flex-col items-center justify-center transition-all cursor-pointer relative overflow-hidden bg-white shadow-xl ${
-                     isDragActive ? 'border-blue-500 bg-blue-50 scale-[1.02]' : 'border-slate-200 hover:border-blue-400'
+              <div
+                {...getRootProps()}
+                className={`w-full aspect-[4/5] max-h-[500px] border-4 border-dashed rounded-[2.5rem] flex flex-col items-center justify-center transition-all cursor-pointer relative overflow-hidden bg-white shadow-xl ${isDragActive ? 'border-blue-500 bg-blue-50 scale-[1.02]' : 'border-slate-200 hover:border-blue-400'
                   }`}
-               >
-                  <input {...getInputProps()} />
-                  <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
-                     <Camera size={40} className="text-blue-600" />
-                  </div>
-                  <p className="font-bold text-slate-700 text-xl">Tap to snap a photo</p>
-                  <p className="text-sm text-slate-400 mt-2">or upload from gallery</p>
-               </div>
+              >
+                <input {...getInputProps()} />
+                <div className="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                  <Camera size={40} className="text-blue-600" />
+                </div>
+                <p className="font-bold text-slate-700 text-xl">Tap to snap a photo</p>
+                <p className="text-sm text-slate-400 mt-2">or upload from gallery</p>
+              </div>
             </motion.div>
           )}
 
@@ -207,22 +206,22 @@ const ReportIssuePage = () => {
               exit={{ opacity: 0 }}
               className="flex flex-col items-center justify-center text-center py-10 w-full px-4 min-h-[50vh]"
             >
-               <div className="relative w-full max-w-[300px] aspect-square rounded-3xl overflow-hidden shadow-2xl mb-8 border-4 border-white mx-auto">
-                 <img src={imagePreview} alt="Analyzing" className="w-full h-full object-cover" />
-                 {/* Scanner Overlay */}
-                 <motion.div 
-                    className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/20 to-transparent"
-                    animate={{ top: ['-100%', '100%'] }}
-                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }} 
-                 />
-                 <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white/20 backdrop-blur-md p-4 rounded-full">
-                       <Sparkles size={40} className="text-white animate-pulse" />
-                    </div>
-                 </div>
-               </div>
-               <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-2">Analyzing Image...</h2>
-               <p className="text-sm md:text-base text-slate-500 animate-pulse px-4">Detecting issue type and severity</p>
+              <div className="relative w-full max-w-[300px] aspect-square rounded-3xl overflow-hidden shadow-2xl mb-8 border-4 border-white mx-auto">
+                <img src={imagePreview} alt="Analyzing" className="w-full h-full object-cover" />
+                {/* Scanner Overlay */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-b from-transparent via-blue-500/20 to-transparent"
+                  animate={{ top: ['-100%', '100%'] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-white/20 backdrop-blur-md p-4 rounded-full">
+                    <Sparkles size={40} className="text-white animate-pulse" />
+                  </div>
+                </div>
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-2">Analyzing Image...</h2>
+              <p className="text-sm md:text-base text-slate-500 animate-pulse px-4">Detecting issue type and severity</p>
             </motion.div>
           )}
 
@@ -238,10 +237,10 @@ const ReportIssuePage = () => {
               <div className="relative h-48 sm:h-64 rounded-3xl overflow-hidden shadow-lg border border-white w-full">
                 <img src={imagePreview} alt="Issue" className="w-full h-full object-cover" />
                 <div className="absolute top-3 right-3 bg-black/50 backdrop-blur px-3 py-1 rounded-full text-white text-xs font-bold flex items-center gap-1">
-                   <Sparkles size={12} className="text-yellow-400" /> AI Generated
+                  <Sparkles size={12} className="text-yellow-400" /> AI Generated
                 </div>
-                <button 
-                  onClick={() => setStep('upload')} 
+                <button
+                  onClick={() => setStep('upload')}
                   className="absolute bottom-3 right-3 p-2 bg-white rounded-full shadow-lg text-slate-900 hover:bg-slate-100 transition-colors"
                 >
                   <Edit3 size={18} />
@@ -249,15 +248,15 @@ const ReportIssuePage = () => {
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 w-full">
-                
+
                 {/* AI Suggestions Section */}
                 <div className="bg-white p-5 sm:p-6 rounded-[2rem] shadow-xl shadow-blue-900/5 space-y-6 border border-slate-100 w-full">
-                  
+
                   {/* Title & Desc */}
                   <div className="space-y-4">
                     <div>
                       <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Title</label>
-                      <input 
+                      <input
                         {...register('title', { required: true })}
                         className="w-full text-lg sm:text-xl font-bold text-slate-900 bg-transparent border-b border-slate-200 py-2 focus:border-blue-500 focus:outline-none placeholder:text-slate-300 break-words"
                         placeholder="Issue Title"
@@ -265,7 +264,7 @@ const ReportIssuePage = () => {
                     </div>
                     <div>
                       <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1">Description</label>
-                      <textarea 
+                      <textarea
                         {...register('description', { required: true })}
                         rows={3}
                         className="w-full text-sm sm:text-base text-slate-600 bg-slate-50 rounded-2xl p-4 mt-2 focus:ring-2 focus:ring-blue-500/20 focus:outline-none resize-none"
@@ -279,48 +278,61 @@ const ReportIssuePage = () => {
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider ml-1 mb-3 block">Category</label>
                     <div className="grid grid-cols-2 gap-3 w-full">
                       {categories.map(cat => (
-                        <label 
+                        <label
                           key={cat.value}
-                          className={`flex flex-col items-center justify-center p-3 rounded-2xl border cursor-pointer transition-all w-full ${
-                            selectedCategory === cat.value 
-                              ? `${cat.bg} ${cat.border} ring-2 ring-blue-500/30 scale-105` 
-                              : 'bg-white border-slate-100 opacity-60 hover:opacity-100'
-                          }`}
+                          className={`flex flex-col items-center justify-center p-3 rounded-2xl border cursor-pointer transition-all w-full ${selectedCategory === cat.value
+                            ? `${cat.bg} ${cat.border} ring-2 ring-blue-500/30 scale-105`
+                            : 'bg-white border-slate-100 opacity-60 hover:opacity-100'
+                            }`}
                         >
-                           <input type="radio" value={cat.value} {...register('category')} className="hidden" />
-                           <cat.icon size={24} className={`${cat.color} mb-1`} />
-                           <span className="text-[10px] font-bold text-slate-700">{cat.label}</span>
+                          <input type="radio" value={cat.value} {...register('category')} className="hidden" />
+                          <cat.icon size={24} className={`${cat.color} mb-1`} />
+                          <span className="text-[10px] font-bold text-slate-700">{cat.label}</span>
                         </label>
                       ))}
                     </div>
                   </div>
 
-                   {/* Location Display */}
-                   <div className="bg-blue-50 p-4 rounded-2xl flex items-center gap-3 w-full">
-                      <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-600 shadow-sm shrink-0">
-                         <MapPin size={20} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                         <p className="text-xs font-bold text-blue-400 uppercase">Location Address</p>
-                         <input
-                           type="text"
-                           value={locationAddress}
-                           onChange={(e) => setLocationAddress(e.target.value)}
-                           className="w-full text-sm font-bold text-slate-800 bg-transparent border-b border-blue-200 focus:border-blue-500 focus:outline-none placeholder-blue-300"
-                           placeholder="Enter address..."
-                         />
-                      </div>
-                   </div>
+                  {/* Location Display */}
+                  <div className="bg-blue-50 p-4 rounded-2xl flex items-center gap-3 w-full">
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-600 shadow-sm shrink-0">
+                      <MapPin size={20} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-blue-400 uppercase">Location Address</p>
+                      <input
+                        type="text"
+                        value={locationAddress}
+                        onChange={(e) => setLocationAddress(e.target.value)}
+                        className="w-full text-sm font-bold text-slate-800 bg-transparent border-b border-blue-200 focus:border-blue-500 focus:outline-none placeholder-blue-300"
+                        placeholder="Enter address..."
+                      />
+                    </div>
+                  </div>
+
+                  {/* Anonymous Toggle */}
+                  <div className="bg-slate-50 p-4 rounded-2xl flex items-center gap-3 w-full border border-slate-100">
+                    <input
+                      type="checkbox"
+                      id="anonymous"
+                      {...register('anonymous')}
+                      className="w-5 h-5 text-slate-900 rounded focus:ring-slate-500 border-gray-300"
+                    />
+                    <label htmlFor="anonymous" className="flex-1 cursor-pointer">
+                      <span className="block text-sm font-bold text-slate-700">Submit Anonymously</span>
+                      <span className="block text-xs text-slate-400">Hide your identity from public view</span>
+                    </label>
+                  </div>
 
                 </div>
 
                 {/* Submit Button */}
-                <button 
-                   type="submit"
-                   disabled={isSubmitting}
-                   className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl shadow-slate-900/20 hover:bg-slate-800 hover:shadow-2xl hover:shadow-slate-900/10 active:scale-95 transition-all flex items-center justify-center disabled:opacity-50 disabled:scale-100"
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg shadow-xl shadow-slate-900/20 hover:bg-slate-800 hover:shadow-2xl hover:shadow-slate-900/10 active:scale-95 transition-all flex items-center justify-center disabled:opacity-50 disabled:scale-100"
                 >
-                   {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : 'Confirm & Report'}
+                  {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : 'Confirm & Report'}
                 </button>
 
 

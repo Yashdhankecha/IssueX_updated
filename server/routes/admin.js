@@ -89,7 +89,7 @@ router.get('/issues', protect, requireAdmin, async (req, res) => {
       .sort(sortObject)
       .skip(skip)
       .limit(parseInt(limit))
-      .select('title description category status createdAt location images statusLogs');
+
 
     const total = await Issue.countDocuments(query);
 
@@ -571,6 +571,71 @@ router.get('/export', protect, requireAdmin, async (req, res) => {
       message: 'Server error while exporting data',
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
+  }
+});
+
+// GET /api/admin/reports - Generate CSV reports
+router.get('/reports', protect, requireAdmin, async (req, res) => {
+  try {
+    const { type, status } = req.query;
+
+    if (type === 'issues') {
+      const query = {};
+      if (status && status !== 'all') query.status = status;
+
+      const issues = await Issue.find(query).populate('reportedBy', 'name email');
+
+      // CSV Header
+      let csv = 'ID,Title,Description,Status,Category,Severity,Priority,Reporter Name,Reporter Email,Date Reported\n';
+
+      // CSV Rows
+      csv += issues.map(issue => {
+        const escape = (text) => `"${String(text || '').replace(/"/g, '""')}"`;
+        return [
+          issue._id,
+          escape(issue.title),
+          escape(issue.description),
+          issue.status,
+          issue.category,
+          issue.severity || 'medium',
+          issue.priority || 'medium',
+          escape(issue.reportedBy?.name || 'Anonymous'),
+          escape(issue.reportedBy?.email || 'N/A'),
+          new Date(issue.createdAt).toISOString()
+        ].join(',');
+      }).join('\n');
+
+      res.header('Content-Type', 'text/csv');
+      res.attachment(`issues_report_${new Date().toISOString().split('T')[0]}.csv`);
+      return res.send(csv);
+
+    } else if (type === 'users') {
+      const users = await User.find().select('-password');
+
+      let csv = 'ID,Name,Email,Role,Department,Joined Date\n';
+
+      csv += users.map(user => {
+        const escape = (text) => `"${String(text || '').replace(/"/g, '""')}"`;
+        return [
+          user._id,
+          escape(user.name),
+          escape(user.email),
+          user.role,
+          user.department || '',
+          new Date(user.createdAt).toISOString()
+        ].join(',');
+      }).join('\n');
+
+      res.header('Content-Type', 'text/csv');
+      res.attachment(`users_report_${new Date().toISOString().split('T')[0]}.csv`);
+      return res.send(csv);
+    }
+
+    res.status(400).json({ success: false, message: 'Invalid report type' });
+
+  } catch (error) {
+    console.error('Report generation error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
