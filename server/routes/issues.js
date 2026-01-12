@@ -945,16 +945,7 @@ router.post('/:id/vote', [
     const issue = await Issue.findById(req.params.id);
     if (!issue) return res.status(404).json({ success: false, message: 'Issue not found' });
 
-    await issue.vote(req.user.id, req.body.voteType);
-    res.json({ success: true, message: 'Vote recorded' });
 
-    // GAMIFICATION: Points for receiving upvote
-    if (req.body.voteType === 'upvote' && issue.reportedBy) {
-      // Avoid self-voting points if needed, but for now simple
-      if (issue.reportedBy.toString() !== req.user.id) {
-        await addPoints(issue.reportedBy, 'UPVOTE_RECEIVED');
-      }
-    }
     const userId = req.user.id;
     const issueId = issue._id;
     const { voteType } = req.body;
@@ -986,6 +977,11 @@ router.post('/:id/vote', [
         // Add to user's upvotedIssues if not already there
         if (!user.upvotedIssues.some(id => id.toString() === issueId.toString())) {
           user.upvotedIssues.push(issueId);
+        }
+
+        // GAMIFICATION: Points for receiving upvote
+        if (issue.reportedBy && issue.reportedBy.toString() !== userId) {
+          await addPoints(issue.reportedBy, 'UPVOTE_RECEIVED');
         }
       }
       // Remove any existing downvote

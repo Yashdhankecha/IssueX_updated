@@ -640,19 +640,19 @@ export const IssueProvider = ({ children }) => {
     try {
       const response = await api.post(`/api/issues/${issueId}/vote`, { voteType });
 
-      if (response.data.success) {
-        const voteData = response.data.data;
+        if (response.data.success) {
+        const voteData = response.data.data || {};
 
         // Update local state with new vote data
         setIssues(prev => prev.map(issue => {
           if (issue.id === issueId || issue._id === issueId) {
             return {
               ...issue,
-              voteCount: voteData.voteCount,
-              upvotesCount: voteData.upvotes,
-              downvotesCount: voteData.downvotes,
-              priority: voteData.priority,
-              userVote: voteData.userVote
+              voteCount: voteData.voteCount !== undefined ? voteData.voteCount : issue.voteCount,
+              upvotesCount: voteData.upvotes !== undefined ? voteData.upvotes : issue.upvotesCount,
+              downvotesCount: voteData.downvotes !== undefined ? voteData.downvotes : issue.downvotesCount,
+              priority: voteData.priority !== undefined ? voteData.priority : issue.priority,
+              userVote: voteData.userVote !== undefined ? voteData.userVote : issue.userVote
             };
           }
           return issue;
