@@ -15,6 +15,7 @@ const issueRoutes = require('./routes/issues')
 const notificationRoutes = require('./routes/notifications')
 const adminRoutes = require('./routes/admin')
 const gamificationRoutes = require('./routes/gamification')
+const governmentRoutes = require('./routes/government')
 const { errorHandler } = require('./middleware/errorHandler')
 
 const app = express()
@@ -81,6 +82,7 @@ app.use('/api/issues', issueRoutes)
 app.use('/api/notifications', notificationRoutes)
 app.use('/api/admin', adminRoutes)
 app.use('/api/gamification', gamificationRoutes)
+app.use('/api/government', governmentRoutes)
 app.get('/api/geocode/reverse', async (req, res) => {
   try {
     const { lat, lng } = req.query;

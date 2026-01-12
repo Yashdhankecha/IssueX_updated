@@ -1059,8 +1059,11 @@ router.put('/:id/start-work', [protect, upload.single('image')], async (req, res
     const issue = await Issue.findById(req.params.id);
     if (!issue) return res.status(404).json({ success: false, message: 'Issue not found' });
 
-    // Verify ownership
-    if (issue.assignedTo?.toString() !== req.user.id && req.user.role !== 'admin') {
+    // Verify ownership or department match
+    const isAssigned = issue.assignedTo?.toString() === req.user.id;
+    const isDeptMatch = req.user.role === 'government' && req.user.department === issue.category;
+
+    if (!isAssigned && !isDeptMatch && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
@@ -1099,7 +1102,10 @@ router.put('/:id/resolve', [protect, upload.single('image')], async (req, res) =
     const issue = await Issue.findById(req.params.id);
     if (!issue) return res.status(404).json({ success: false, message: 'Issue not found' });
 
-    if (issue.assignedTo?.toString() !== req.user.id && req.user.role !== 'admin') {
+    const isAssigned = issue.assignedTo?.toString() === req.user.id;
+    const isDeptMatch = req.user.role === 'government' && req.user.department === issue.category;
+
+    if (!isAssigned && !isDeptMatch && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
