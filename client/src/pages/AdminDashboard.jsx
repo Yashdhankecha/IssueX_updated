@@ -964,6 +964,7 @@ const AdminDashboard = () => {
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                     <option value="government">Government Official</option>
+                    <option value="manager">City Manager (Supervisor)</option>
                   </select>
                 </div>
 
@@ -1002,72 +1003,15 @@ const AdminDashboard = () => {
                   type="submit"
                   className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all mt-4"
                 >
-
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-bold text-slate-900">Edit User</h2>
-                        <button onClick={() => setShowUserModal(false)} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200"><X size={20} /></button>
-                    </div>
-
-                    <form onSubmit={handleUserUpdate} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Role</label>
-                            <select 
-                                className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
-                                value={selectedUser.role}
-                                onChange={e => setSelectedUser({...selectedUser, role: e.target.value})}
-                            >
-                                <option value="user">User</option>
-                                <option value="admin">Admin</option>
-                                <option value="government">Government Official</option>
-                                <option value="manager">City Manager (Supervisor)</option>
-                            </select>
-                        </div>
-
-                        {selectedUser.role === 'government' && (
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Department</label>
-                                <select 
-                                    className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
-                                    value={selectedUser.department || ''}
-                                    onChange={e => setSelectedUser({...selectedUser, department: e.target.value})}
-                                    required={selectedUser.role === 'government'}
-                                >
-                                    <option value="">Select Department</option>
-                                    <option value="roads">Roads Department</option>
-                                    <option value="lighting">Lighting Department</option>
-                                    <option value="water">Water Department</option>
-                                    <option value="cleanliness">Sanitation (Cleanliness)</option>
-                                    <option value="safety">Public Safety</option>
-                                    <option value="obstructions">Obstructions</option>
-                                </select>
-                            </div>
-                        )}
-
-                        <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                             <input 
-                                type="checkbox" 
-                                id="isActive"
-                                checked={selectedUser.isActive !== false}
-                                onChange={e => setSelectedUser({...selectedUser, isActive: e.target.checked})}
-                                className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
-                             />
-                             <label htmlFor="isActive" className="text-sm font-bold text-slate-700">Account Active</label>
-                        </div>
-
-                        <button 
-                            type="submit"
-                            className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all mt-4"
-                        >
-                            Save Changes
-                        </button>
-                    </form>
-                </motion.div>
+                  Save Changes
+                </button>
+              </form>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-    </div>
+    </div >
   );
 };
 
