@@ -186,6 +186,23 @@ router.patch('/issues/:id/status', protect, requireAdmin, async (req, res) => {
 
     await issue.save();
 
+    // Notify reporter of status change
+    if (issue.reportedBy) {
+      try {
+        await Notification.create({
+          userId: issue.reportedBy,
+          type: 'update',
+          title: 'Issue Status Updated',
+          message: `Your issue "${issue.title}" has been updated to "${status.replace('_', ' ')}".`,
+          issueId: issue._id,
+          icon: 'update',
+          priority: 'medium'
+        });
+      } catch (err) {
+        console.error('Failed to send status notification', err);
+      }
+    }
+
     // Populate reporter info for response
     await issue.populate('reportedBy', 'name email');
 
