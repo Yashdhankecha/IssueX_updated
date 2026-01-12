@@ -417,6 +417,49 @@ router.get('/my-stats', protect, async (req, res) => {
   }
 });
 
+// @desc    Get field workers for department
+// @route   GET /api/issues/field-workers
+// @access  Private (Government)
+router.get('/field-workers', protect, async (req, res) => {
+  try {
+    if (req.user.role !== 'government' && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    const query = { role: 'field_worker' };
+
+    // If government, only get workers from their department
+    if (req.user.role === 'government') {
+      if (!req.user.department) {
+        console.warn('Government user has no department:', req.user._id);
+        return res.status(400).json({ success: false, message: 'User has no department assigned' });
+      }
+
+      console.log(`Fetching field workers for dept: ${req.user.department}`);
+      // Case-insensitive match for department to avoid mismatches
+      query.department = { $regex: new RegExp(`^${req.user.department}$`, 'i') };
+    }
+
+    console.log('Worker query:', query);
+    const workers = await User.find(query).select('name email department phone');
+    console.log(`Found ${workers.length} workers matching query.`);
+
+    // DEBUG: If 0 workers found, log all field workers to see what's available
+    if (workers.length === 0) {
+      const allWorkers = await User.find({ role: 'field_worker' }).select('name department');
+      console.log('DEBUG: All Field Workers in DB:', allWorkers);
+    }
+
+    res.json({
+      success: true,
+      data: workers
+    });
+  } catch (error) {
+    console.error('Get field workers error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // @desc    Get single issue
 // @route   GET /api/issues/:id
 // @access  Public
@@ -1450,36 +1493,7 @@ router.get('/worker/assigned', protect, async (req, res) => {
   }
 });
 
-// @desc    Get field workers for department
-// @route   GET /api/issues/field-workers
-// @access  Private (Government)
-router.get('/field-workers', protect, async (req, res) => {
-  try {
-    if (req.user.role !== 'government' && req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Not authorized' });
-    }
 
-    const query = { role: 'field_worker' };
-
-    // If government, only get workers from their department
-    if (req.user.role === 'government') {
-      if (!req.user.department) {
-        return res.status(400).json({ success: false, message: 'User has no department assigned' });
-      }
-      query.department = req.user.department;
-    }
-
-    const workers = await User.find(query).select('name email department phone');
-
-    res.json({
-      success: true,
-      data: workers
-    });
-  } catch (error) {
-    console.error('Get field workers error:', error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
 
 // @desc    Assign field worker to issue
 // @route   PUT /api/issues/:id/assign-worker

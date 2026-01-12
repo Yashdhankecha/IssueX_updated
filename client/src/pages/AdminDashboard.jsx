@@ -286,7 +286,7 @@ const AdminDashboard = () => {
     try {
       const updates = {
         role: selectedUser.role,
-        department: selectedUser.role === 'government' ? selectedUser.department : undefined,
+        department: ['government', 'manager', 'field_worker'].includes(selectedUser.role) ? selectedUser.department : undefined,
         isActive: selectedUser.isActive
       };
       await api.patch(`/api/admin/users/${selectedUser._id}`, updates);

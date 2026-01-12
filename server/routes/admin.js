@@ -326,17 +326,21 @@ router.get('/user/:id', protect, requireAdmin, async (req, res) => {
 router.patch('/users/:id', protect, requireAdmin, async (req, res) => {
   try {
     const { role, department, isActive, isEmailVerified } = req.body;
+    console.log(`Admin updating user ${req.params.id}. Body:`, req.body);
 
     const updateData = {};
     if (role) updateData.role = role;
+    // Allow setting department to null explicitely or if it is present
     if (department !== undefined) updateData.department = department;
     if (typeof isActive === 'boolean') updateData.isActive = isActive;
     if (typeof isEmailVerified === 'boolean') updateData.isEmailVerified = isEmailVerified;
 
+    console.log('Update payload:', updateData);
+
     const user = await User.findByIdAndUpdate(
       req.params.id,
       updateData,
-      { new: true }
+      { new: true, runValidators: true } // Ensure validators run
     ).select('-password');
 
     if (!user) {
