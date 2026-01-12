@@ -70,6 +70,7 @@ const userSchema = new mongoose.Schema({
     enum: ['roads', 'lighting', 'water', 'cleanliness', 'safety', 'obstructions'],
     required: false
   },
+
   // Gamification Fields
   impactScore: {
     type: Number,
@@ -88,6 +89,16 @@ const userSchema = new mongoose.Schema({
     rewardId: String,
     redeemedAt: { type: Date, default: Date.now },
     code: String
+  }],
+
+  // Track issues the user has voted on
+  upvotedIssues: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Issue'
+  }],
+  downvotedIssues: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Issue'
   }],
   preferences: {
     notifications: {
