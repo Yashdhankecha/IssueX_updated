@@ -563,6 +563,23 @@ router.post('/', [
 
     console.log('Creating issue with data:', { ...req.body, location });
 
+    // --- SPAM DETECTION ---
+    if (req.user) {
+      const oneMinuteAgo = new Date(Date.now() - 60 * 1000);
+      const recentIssue = await Issue.findOne({
+        reportedBy: req.user.id,
+        createdAt: { $gte: oneMinuteAgo }
+      });
+
+      if (recentIssue) {
+        return res.status(429).json({
+          success: false,
+          message: 'You are posting too frequently. Please wait a moment.'
+        });
+      }
+    }
+    // ---------------------
+
     // Validate coordinates
     if (!location || typeof location.lat !== 'number' || typeof location.lng !== 'number') {
       return res.status(400).json({
@@ -571,6 +588,78 @@ router.post('/', [
         received: location
       });
     }
+
+    // --- DUPLICATE CHECK ---
+    // Check for existing active issues of same category within 20 meters
+    const nearbyIssues = await Issue.find({
+      category,
+      isActive: true,
+      status: { $in: ['reported', 'in_progress'] },
+      location: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [location.lng, location.lat]
+          },
+          $maxDistance: 20 // 20 meters
+        }
+      }
+    });
+
+    if (nearbyIssues.length > 0) {
+      const existingIssue = nearbyIssues[0];
+
+      // Check if reported by SAME user
+      if (req.user && existingIssue.reportedBy && existingIssue.reportedBy.toString() === req.user.id) {
+        console.log('Self-duplication detected');
+        return res.status(400).json({
+          success: false,
+          message: 'You have already reported this issue.'
+        });
+      }
+
+      console.log(`Duplicate issue detected. Merging with existing issue: ${existingIssue._id}`);
+
+      // If user is logged in, upvote the existing issue
+      let upvoted = false;
+      if (req.user) {
+        // Check if already upvoted
+        const alreadyUpvoted = existingIssue.upvotes.some(id => id.toString() === req.user.id);
+        if (!alreadyUpvoted) {
+          existingIssue.upvotes.push(req.user.id);
+          // Remove from downvotes if present
+          existingIssue.downvotes = existingIssue.downvotes.filter(id => id.toString() !== req.user.id);
+          await existingIssue.save();
+
+          // Add to user's upvoted history
+          const user = await User.findById(req.user.id);
+          if (user && !user.upvotedIssues.includes(existingIssue._id)) {
+            user.upvotedIssues.push(existingIssue._id);
+            await user.save();
+          }
+
+          // GAMIFICATION: Points for upvoting (if applicable logic exists here)
+          await addPoints(existingIssue.reportedBy, 'UPVOTE_RECEIVED');
+
+          upvoted = true;
+        }
+      }
+
+      // Populate reporter for consistent response
+      await existingIssue.populate('reportedBy', 'name email');
+
+      return res.status(200).json({
+        success: true,
+        message: upvoted
+          ? 'Similar issue already exists nearby. We have upvoted it for you!'
+          : 'Similar issue already exists nearby.',
+        data: {
+          ...existingIssue.toObject(),
+          isDuplicate: true
+        }
+      });
+    }
+    // -----------------------
 
     // --- GOOGLE FEATURES INTEGRATION ---
 
