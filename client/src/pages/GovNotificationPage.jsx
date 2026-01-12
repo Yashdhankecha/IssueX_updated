@@ -19,9 +19,10 @@ const GovNotificationPage = () => {
             setLoading(true);
             const res = await api.get('/api/notifications');
             if (res.data.success) {
-                const data = Array.isArray(res.data.data) ? res.data.data : [];
-                setNotifications(data);
-                markAllAsRead(); 
+                // Handle pagination structure or direct array
+                const notificationsData = res.data.data.notifications || (Array.isArray(res.data.data) ? res.data.data : []);
+                setNotifications(notificationsData);
+                markAllAsRead();
             } else {
                 setNotifications([]);
             }
@@ -36,7 +37,7 @@ const GovNotificationPage = () => {
     const getIcon = (type) => {
         switch (type) {
             case 'assigned': return <AlertTriangle className="text-orange-500" size={24} />;
-            case 'success': 
+            case 'success':
             case 'issue_resolved': return <CheckCircle className="text-green-500" size={24} />;
             case 'alert': return <AlertTriangle className="text-red-500" size={24} />;
             case 'update': return <Clock className="text-blue-500" size={24} />;
@@ -50,8 +51,8 @@ const GovNotificationPage = () => {
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-2xl font-bold text-slate-900">Notifications</h1>
                     {notifications.length > 0 && (
-                        <button 
-                            onClick={clearAll} 
+                        <button
+                            onClick={clearAll}
                             className="text-xs font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-full hover:bg-red-100 transition-colors flex items-center gap-1"
                         >
                             <Trash2 size={12} /> Clear All
@@ -61,14 +62,14 @@ const GovNotificationPage = () => {
 
                 <div className="space-y-3">
                     {loading ? (
-                         <div className="text-center py-10 text-slate-400">Loading...</div>
+                        <div className="text-center py-10 text-slate-400">Loading...</div>
                     ) : notifications.length === 0 ? (
                         <div className="text-center py-20 bg-white rounded-[2rem] border border-slate-100 shadow-sm">
-                             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Bell size={32} className="text-slate-300" />
-                             </div>
-                             <h3 className="font-bold text-slate-900 mb-1">No New Alerts</h3>
-                             <p className="text-slate-400 text-sm">You are all caught up!</p>
+                            </div>
+                            <h3 className="font-bold text-slate-900 mb-1">No New Alerts</h3>
+                            <p className="text-slate-400 text-sm">You are all caught up!</p>
                         </div>
                     ) : (
                         <AnimatePresence>

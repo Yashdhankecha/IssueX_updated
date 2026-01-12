@@ -639,4 +639,57 @@ router.get('/reports', protect, requireAdmin, async (req, res) => {
   }
 });
 
+// POST /api/admin/issues/:id/remind - Send reminder to relevant department
+router.post('/issues/:id/remind', protect, async (req, res) => {
+  try {
+    // Check permission
+    if (req.user.role !== 'admin' && req.user.role !== 'manager') {
+      return res.status(403).json({ success: false, message: 'Access denied. Admin or Manager role required.' });
+    }
+
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) {
+      return res.status(404).json({ success: false, message: 'Issue not found' });
+    }
+
+
+    // Find government users in this department
+    const govUsers = await User.find({
+      role: 'government',
+      department: issue.category,
+      isActive: true
+    });
+
+    if (govUsers.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No active government users found for ${issue.category} department`
+      });
+    }
+
+    // Create notifications
+    const notifications = govUsers.map(user => ({
+      userId: user._id,
+      type: 'system',
+      title: 'Action Reminder',
+      message: `Admin Reminder: Please attend to the reported ${issue.category} issue: "${issue.title}"`,
+      issueId: issue._id,
+      icon: 'alert',
+      priority: 'high',
+      createdAt: new Date()
+    }));
+
+    await Notification.insertMany(notifications);
+
+    res.json({
+      success: true,
+      message: `Reminder sent to ${govUsers.length} ${issue.category} department official(s)`
+    });
+
+  } catch (error) {
+    console.error('Remind dept error:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 module.exports = router; 

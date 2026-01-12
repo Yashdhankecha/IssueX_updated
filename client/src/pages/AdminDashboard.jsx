@@ -24,7 +24,8 @@ import {
   X,
   ChevronRight,
   TrendingUp,
-  Activity
+  Activity,
+  Bell
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
@@ -253,6 +254,17 @@ const AdminDashboard = () => {
       fetchStats();
     } catch (error) {
       toast.error('Failed to delete');
+    }
+  };
+
+  const handleRemindDept = async (issueId) => {
+    try {
+      const res = await api.post(`/api/admin/issues/${issueId}/remind`);
+      if (res.data.success) {
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to send reminder');
     }
   };
 
@@ -898,6 +910,12 @@ const AdminDashboard = () => {
               </p>
 
               <div className="pt-6 border-t border-slate-100">
+                <button
+                  onClick={() => handleRemindDept(selectedIssue._id)}
+                  className="w-full mb-4 py-3 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Bell size={16} /> Send Department Reminder
+                </button>
                 <div className="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Update Status</div>
                 <div className="grid grid-cols-2 gap-3">
                   <button

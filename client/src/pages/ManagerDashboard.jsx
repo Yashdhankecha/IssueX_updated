@@ -74,18 +74,18 @@ const ManagerDashboard = () => {
     const handleSendReminder = async (issueId) => {
         try {
             setSendingReminder(issueId);
-            // Using escalation endpoint for reminder/escalation
-            const res = await api.post(`/api/government/escalate/${issueId}`, {
-                escalationNote: 'Manager Reminder: This issue is critical/overdue. Please resolve immediately.',
-                newPriority: 'urgent'
-            });
-            
+            // Use the shared reminder endpoint which sends notifications to the department
+            const res = await api.post(`/api/admin/issues/${issueId}/remind`);
+
             if (res.data.success) {
-                toast.success('Reminder sent & priority escalated');
+                toast.success('Reminder sent to department');
+                // Optional: We can still escalate priority locally or via another call if needed, 
+                // but the user specifically requested notifications.
                 fetchDashboardData();
             }
         } catch (error) {
-            toast.error('Failed to send reminder');
+            console.error(error);
+            toast.error(error.response?.data?.message || 'Failed to send reminder');
         } finally {
             setSendingReminder(null);
         }
@@ -257,7 +257,7 @@ const ManagerDashboard = () => {
                         bg="bg-indigo-50"
                         subtitle="Across all departments"
                     />
-                     <StatCard
+                    <StatCard
                         title="Critical Overdue"
                         value={totalOverdue}
                         icon={AlertTriangle}
@@ -296,7 +296,7 @@ const ManagerDashboard = () => {
                                     {totalOverdue} Issues Overdue
                                 </div>
                             </div>
-                            
+
                             {totalOverdue === 0 ? (
                                 <div className="text-center py-12">
                                     <CheckCircle size={48} className="text-emerald-500 mx-auto mb-4" />
@@ -310,7 +310,7 @@ const ManagerDashboard = () => {
                                         .map((issue) => (
                                             <div key={issue._id} className="p-4 rounded-xl border border-red-100 bg-red-50/10 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                                                 <div className="flex-1">
-                                                     <div className="flex items-center gap-2 mb-2">
+                                                    <div className="flex items-center gap-2 mb-2">
                                                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${getSeverityColor(issue.severity || 'high')}`}>
                                                             {issue.severity?.toUpperCase() || 'HIGH'}
                                                         </span>
@@ -343,13 +343,13 @@ const ManagerDashboard = () => {
                             )}
                         </div>
 
-                         {/* Department Breakdown */}
-                         <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
+                        {/* Department Breakdown */}
+                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
                             <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
                                 <BarChart3 size={20} className="text-indigo-500" />
                                 Department Performance Overview
                             </h3>
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {Object.entries(stats.byDepartment || {}).map(([dept, deptStats]) => (
                                     <div key={dept} className="p-4 rounded-xl border border-slate-100 hover:border-indigo-200 transition-colors bg-slate-50/50">
                                         <div className="flex items-center justify-between mb-3">
@@ -362,9 +362,9 @@ const ManagerDashboard = () => {
                                                 </span>
                                             )}
                                         </div>
-                                         {/* Progress bar */}
-                                         <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden mb-2">
-                                            <div 
+                                        {/* Progress bar */}
+                                        <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden mb-2">
+                                            <div
                                                 className="bg-emerald-500 h-full rounded-full transition-all duration-1000"
                                                 style={{ width: `${deptStats.total > 0 ? ((deptStats.resolved + deptStats.closed) / deptStats.total) * 100 : 0}%` }}
                                             />
@@ -375,19 +375,19 @@ const ManagerDashboard = () => {
                                         </div>
                                     </div>
                                 ))}
-                             </div>
+                            </div>
                         </div>
                     </div>
 
                     {/* Settings & Thresholds */}
                     <div className="space-y-6">
                         <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
-                             <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
                                 <Settings size={20} className="text-slate-500" />
                                 Threshold Configuration
                             </h3>
                             <p className="text-slate-500 text-sm mb-4">Set operational limits for each department. Breaches will appear in the Critical Overdue list.</p>
-                            
+
                             <div className="space-y-2">
                                 {thresholds.map((threshold) => (
                                     <button
@@ -413,17 +413,17 @@ const ManagerDashboard = () => {
                         </div>
 
                         {/* Recent Activity Mini-Feed */}
-                         <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 opacity-60">
+                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 opacity-60">
                             <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">System Status</h3>
                             <div className="flex items-center gap-2 text-sm text-slate-500">
                                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                                 All systems nominal
                             </div>
                             <div className="mt-4 text-xs text-slate-400">
-                                Automatic database backups enabled.<br/>
+                                Automatic database backups enabled.<br />
                                 Last backup: 2 hours ago.
                             </div>
-                         </div>
+                        </div>
                     </div>
                 </div>
             </div>
