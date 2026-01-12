@@ -235,7 +235,7 @@ const AdminDashboard = () => {
     try {
         const updates = {
             role: selectedUser.role,
-            department: selectedUser.role === 'government' ? selectedUser.department : undefined,
+            department: selectedUser.role === 'government' ? selectedUser.department : null,
             isActive: selectedUser.isActive
         };
         await api.patch(`/api/admin/users/${selectedUser._id}`, updates);
@@ -813,6 +813,7 @@ const AdminDashboard = () => {
                                 <option value="user">User</option>
                                 <option value="admin">Admin</option>
                                 <option value="government">Government Official</option>
+                                <option value="manager">City Manager (Supervisor)</option>
                             </select>
                         </div>
 

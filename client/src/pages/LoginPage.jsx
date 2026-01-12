@@ -23,7 +23,16 @@ const LoginPage = () => {
     try {
       const result = await login(data.email, data.password);
       if (result.success) {
-        if (auth.currentUser && !auth.currentUser.emailVerified) {
+        // Fetch fresh user data to check role immediately
+        const currentUser = result.user || JSON.parse(localStorage.getItem('user'));
+        
+        if (currentUser?.role === 'manager') {
+           navigate('/manager-dashboard', { replace: true });
+        } else if (currentUser?.role === 'government') {
+           navigate('/gov-dashboard', { replace: true });
+        } else if (currentUser?.role === 'admin') {
+           navigate('/admin', { replace: true });
+        } else if (auth.currentUser && !auth.currentUser.emailVerified) {
              navigate('/verify-email');
         } else {
              navigate(from, { replace: true });

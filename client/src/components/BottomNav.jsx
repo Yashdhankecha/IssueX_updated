@@ -40,8 +40,18 @@ const BottomNav = () => {
     { name: 'Profile', href: '/gov-profile', icon: User },
   ];
 
+  const managerNavItems = [
+    { name: 'Dashboard', href: '/manager-dashboard', icon: BarChart3 },
+    { name: 'Map', href: '/gov-map', icon: Map },
+    { name: 'Logout', icon: LogOut, onClick: logout },
+  ];
+
   const isGovernment = user?.role === 'government';
-  const navItems = isAdmin ? adminNavItems : (isGovernment ? govNavItems : userNavItems);
+  const isManager = user?.role === 'manager';
+  
+  const navItems = isAdmin 
+    ? adminNavItems 
+    : (isManager ? managerNavItems : (isGovernment ? govNavItems : userNavItems));
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-200 py-2 px-4 z-[60] lg:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">

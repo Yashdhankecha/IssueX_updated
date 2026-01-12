@@ -16,7 +16,7 @@ const requireGovernment = async (req, res, next) => {
             });
         }
 
-        if (req.user.role !== 'government' && req.user.role !== 'admin') {
+        if (req.user.role !== 'government' && req.user.role !== 'admin' && req.user.role !== 'manager') {
             return res.status(403).json({
                 success: false,
                 message: 'Government access required'
@@ -78,7 +78,13 @@ router.get('/dashboard', protect, requireGovernment, async (req, res) => {
         };
 
         // Initialize department stats
-        const departments = ['roads', 'lighting', 'water', 'cleanliness', 'safety', 'obstructions'];
+        let departments = ['roads', 'lighting', 'water', 'cleanliness', 'safety', 'obstructions'];
+
+        // If Restricted to one department
+        if (userDepartment && req.user.role !== 'admin' && req.user.role !== 'manager') {
+            departments = [userDepartment];
+        }
+
         departments.forEach(dept => {
             stats.byDepartment[dept] = {
                 total: 0,
@@ -415,13 +421,22 @@ router.get('/department-stats', protect, requireGovernment, async (req, res) => 
 
         const now = new Date();
 
+        const userDepartment = req.user.department;
+
+        // Build match query
+        let matchQuery = {
+            createdAt: { $gte: startDate },
+            isActive: true
+        };
+
+        if (userDepartment && req.user.role !== 'admin' && req.user.role !== 'manager') {
+            matchQuery.category = userDepartment;
+        }
+
         // Aggregate stats by department
         const departmentStats = await Issue.aggregate([
             {
-                $match: {
-                    createdAt: { $gte: startDate },
-                    isActive: true
-                }
+                $match: matchQuery
             },
             {
                 $group: {

@@ -25,6 +25,7 @@ import SettingsPage from './pages/SettingsPage';
 import NotificationPage from './pages/NotificationPage';
 import AdminDashboard from './pages/AdminDashboard';
 import GovDashboard from './pages/GovDashboard';
+import ManagerDashboard from './pages/ManagerDashboard';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -149,6 +150,15 @@ function App() {
                       <ProtectedRoute govOnly>
                         <Layout>
                           <GovProfilePage />
+                        </Layout>
+                      </ProtectedRoute>
+                    } />
+
+                    {/* Manager Routes */}
+                    <Route path="/manager-dashboard" element={
+                      <ProtectedRoute managerOnly>
+                        <Layout>
+                          <ManagerDashboard />
                         </Layout>
                       </ProtectedRoute>
                     } />

@@ -35,6 +35,7 @@ const Navbar = ({ onMenuClick }) => {
   const location = useLocation();
 
   const isGovernment = user?.role === 'government';
+  const isManager = user?.role === 'manager';
 
   let navigation = [
     { name: 'Home', href: '/dashboard', icon: Home },
@@ -48,6 +49,11 @@ const Navbar = ({ onMenuClick }) => {
       { name: 'Overview', href: '/admin?tab=overview', icon: BarChart3 },
       { name: 'Issues', href: '/admin?tab=issues', icon: AlertCircle },
       { name: 'Users', href: '/admin?tab=users', icon: Users },
+    ];
+  } else if (isManager) {
+    navigation = [
+      { name: 'Dashboard', href: '/manager-dashboard', icon: BarChart3 },
+      { name: 'Map', href: '/gov-map', icon: MapPin },
     ];
   } else if (isGovernment) {
     navigation = [
@@ -107,8 +113,8 @@ const Navbar = ({ onMenuClick }) => {
 
           {/* Right Side */}
           <div className="flex items-center space-x-4">
-            {/* Location Indicator - Only show for non-admin users */}
-            {!isAdmin && (
+            {/* Location Indicator - Only show for non-admin/manager users */}
+            {!isAdmin && !isManager && !isGovernment && (
               <div className="relative">
                 <button 
                   onClick={() => setRadiusOpen(!radiusOpen)}
