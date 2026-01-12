@@ -110,6 +110,10 @@ const issueSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  assignedWorker: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
   // --- Resolution Workflow ---
   workStartedAt: {
     type: Date

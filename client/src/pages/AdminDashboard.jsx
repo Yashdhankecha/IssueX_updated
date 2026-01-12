@@ -983,17 +983,19 @@ const AdminDashboard = () => {
                     <option value="admin">Admin</option>
                     <option value="government">Government Official</option>
                     <option value="manager">City Manager (Supervisor)</option>
+
+                    <option value="field_worker">Field Worker</option>
                   </select>
                 </div>
 
-                {selectedUser.role === 'government' && (
+                {['government', 'manager', 'field_worker'].includes(selectedUser.role) && (
                   <div>
                     <label className="block text-sm font-bold text-slate-700 mb-1">Department</label>
                     <select
                       className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
                       value={selectedUser.department || ''}
                       onChange={e => setSelectedUser({ ...selectedUser, department: e.target.value })}
-                      required={selectedUser.role === 'government'}
+                      required={['government', 'manager', 'field_worker'].includes(selectedUser.role)}
                     >
                       <option value="">Select Department</option>
                       <option value="roads">Roads Department</option>
@@ -1017,6 +1019,8 @@ const AdminDashboard = () => {
                   <label htmlFor="isActive" className="text-sm font-bold text-slate-700">Account Active</label>
                 </div>
 
+
+
                 <button
                   type="submit"
                   className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all mt-4"
@@ -1024,8 +1028,10 @@ const AdminDashboard = () => {
                   Save Changes
                 </button>
               </form>
+
             </motion.div>
           </motion.div>
+
         )}
       </AnimatePresence>
 

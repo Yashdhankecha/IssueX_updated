@@ -26,6 +26,7 @@ import NotificationPage from './pages/NotificationPage';
 import AdminDashboard from './pages/AdminDashboard';
 import GovDashboard from './pages/GovDashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
+import WorkerDashboard from './pages/WorkerDashboard';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -159,6 +160,15 @@ function App() {
                       <ProtectedRoute managerOnly>
                         <Layout>
                           <ManagerDashboard />
+                        </Layout>
+                      </ProtectedRoute>
+                    } />
+
+                    {/* Worker Routes */}
+                    <Route path="/worker-dashboard" element={
+                      <ProtectedRoute workerOnly>
+                        <Layout>
+                          <WorkerDashboard />
                         </Layout>
                       </ProtectedRoute>
                     } />

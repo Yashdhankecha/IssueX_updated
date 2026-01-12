@@ -174,10 +174,7 @@ const GovDashboard = () => {
                             <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
                             <span className="hidden sm:inline">Refresh</span>
                         </button>
-                        <div className="text-right hidden sm:block">
-                            <div className="text-sm font-bold text-slate-400 uppercase tracking-wide">Department</div>
-                            <div className="text-xl font-bold text-blue-600">{user?.department?.toUpperCase() || 'ALL'}</div>
-                        </div>
+                        
                     </div>
                 </div>
 

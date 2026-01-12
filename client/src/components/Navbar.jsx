@@ -36,6 +36,7 @@ const Navbar = ({ onMenuClick }) => {
 
   const isGovernment = user?.role === 'government';
   const isManager = user?.role === 'manager';
+  const isWorker = user?.role === 'field_worker';
 
   let navigation = [
     { name: 'Home', href: '/dashboard', icon: Home },
@@ -60,6 +61,11 @@ const Navbar = ({ onMenuClick }) => {
       { name: 'Dashboard', href: '/gov-dashboard', icon: BarChart3 },
       { name: 'Issues', href: '/gov-issues', icon: AlertCircle },
       { name: 'Map', href: '/gov-map', icon: MapPin },
+    ];
+  } else if (isWorker) {
+    navigation = [
+       { name: 'My Tasks', href: '/worker-dashboard?view=list', icon: BarChart3 },
+       { name: 'Task Map', href: '/worker-dashboard?view=map', icon: Map },
     ];
   }
 

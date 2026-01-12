@@ -30,6 +30,8 @@ const LoginPage = () => {
            navigate('/manager-dashboard', { replace: true });
         } else if (currentUser?.role === 'government') {
            navigate('/gov-dashboard', { replace: true });
+        } else if (currentUser?.role === 'field_worker') {
+           navigate('/worker-dashboard', { replace: true });
         } else if (currentUser?.role === 'admin') {
            navigate('/admin', { replace: true });
         } else if (auth.currentUser && !auth.currentUser.emailVerified) {
