@@ -1214,7 +1214,7 @@ router.put('/:id/start-work', [protect, upload.single('image')], async (req, res
         title: 'Work Started',
         message: `The ${issue.category} department has started working on your issue.`,
         issueId: issue._id,
-        icon: 'construction',
+        icon: 'update',
         priority: 'high'
       });
     }
@@ -1264,12 +1264,12 @@ router.put('/:id/resolve', [protect, upload.single('image')], async (req, res) =
     if (issue.reportedBy) {
       await Notification.create({
         userId: issue.reportedBy,
-        type: 'success',
+        type: 'update',
         title: 'Issue Resolved',
         message: `The issue has been marked resolved. Please verify the fix.`,
         issueId: issue._id,
-        icon: 'check_circle',
-        priority: 'urgent'
+        icon: 'update',
+        priority: 'high'
       });
     }
 
@@ -1362,12 +1362,12 @@ router.put('/:id/approve-fix', protect, async (req, res) => {
     if (issue.assignedTo) {
       await Notification.create({
         userId: issue.assignedTo,
-        type: 'success',
+        type: 'update',
         title: 'Fix Verified',
         message: `The user has verified the fix for ${issue.title}. Issue Closed.`,
         issueId: issue._id,
-        icon: 'check_all',
-        priority: 'normal'
+        icon: 'update',
+        priority: 'medium'
       });
     }
 
@@ -1401,12 +1401,12 @@ router.put('/:id/reject-fix', protect, async (req, res) => {
     if (issue.assignedTo) {
       await Notification.create({
         userId: issue.assignedTo,
-        type: 'alert',
+        type: 'update',
         title: 'Fix Rejected',
         message: `The user rejected the fix for ${issue.title}. Re-opened for work.`,
         issueId: issue._id,
-        icon: 'close',
-        priority: 'urgent'
+        icon: 'alert',
+        priority: 'high'
       });
     }
 
