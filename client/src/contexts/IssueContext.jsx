@@ -101,6 +101,7 @@ export const IssueProvider = ({ children }) => {
     status: 'all',
     category: 'all',
     radius: 3,
+    search: '',
   });
   const [selectedIssue, setSelectedIssue] = useState(null);
   const { selectedLocation, isWithinRadius } = useLocation();
@@ -194,13 +195,21 @@ export const IssueProvider = ({ children }) => {
           ? isWithinRadius(issue.location)
           : true;
 
+
         // Apply status filter
         const statusMatch = filters.status === 'all' || issue.status === filters.status;
 
         // Apply category filter
         const categoryMatch = filters.category === 'all' || issue.category === filters.category;
 
-        return withinRadius && statusMatch && categoryMatch;
+        // Apply search filter
+        const searchMatch = !filters.search || 
+          issue.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          issue.description?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          issue._id?.includes(filters.search) ||
+          issue.id?.includes(filters.search);
+
+        return withinRadius && statusMatch && categoryMatch && searchMatch;
       });
 
       setFilteredIssues(filtered);

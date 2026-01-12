@@ -130,7 +130,10 @@ const ReportIssuePage = () => {
     try {
       const issueData = {
         ...data,
-        location: selectedLocation,
+        location: {
+          ...selectedLocation,
+          address: locationAddress
+        },
         images: [imageFile],
         tags: aiData?.tags || []
       };
@@ -298,8 +301,14 @@ const ReportIssuePage = () => {
                          <MapPin size={20} />
                       </div>
                       <div className="min-w-0 flex-1">
-                         <p className="text-xs font-bold text-blue-400 uppercase">Location Detected</p>
-                         <p className="text-sm font-bold text-slate-800 truncate w-full max-w-[200px] sm:max-w-[300px]">{locationAddress || `${selectedLocation?.lat.toFixed(4)}, ${selectedLocation?.lng.toFixed(4)}`}</p>
+                         <p className="text-xs font-bold text-blue-400 uppercase">Location Address</p>
+                         <input
+                           type="text"
+                           value={locationAddress}
+                           onChange={(e) => setLocationAddress(e.target.value)}
+                           className="w-full text-sm font-bold text-slate-800 bg-transparent border-b border-blue-200 focus:border-blue-500 focus:outline-none placeholder-blue-300"
+                           placeholder="Enter address..."
+                         />
                       </div>
                    </div>
 
@@ -313,6 +322,7 @@ const ReportIssuePage = () => {
                 >
                    {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : 'Confirm & Report'}
                 </button>
+
 
               </form>
             </motion.div>

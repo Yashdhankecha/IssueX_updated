@@ -21,13 +21,16 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation as useLocationContext } from '../contexts/LocationContext';
+import { useIssue } from '../contexts/IssueContext';
 import { useNotification } from '../contexts/NotificationContext';
 
 const Navbar = ({ onMenuClick }) => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [radiusOpen, setRadiusOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { user, logout, isAdmin } = useAuth();
-  const { selectedLocation, radius } = useLocationContext();
+  const { selectedLocation, radius, updateRadius } = useLocationContext();
+  const { updateFilters } = useIssue();
   const { unreadCount } = useNotification();
   const location = useLocation();
 
@@ -106,11 +109,47 @@ const Navbar = ({ onMenuClick }) => {
           <div className="flex items-center space-x-4">
             {/* Location Indicator - Only show for non-admin users */}
             {!isAdmin && (
-              <div className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                <MapPin size={16} className="text-green-600" />
-                <span className="text-sm text-green-700 font-medium">
-                  {selectedLocation ? `${radius}km radius` : 'Set location'}
-                </span>
+              <div className="relative">
+                <button 
+                  onClick={() => setRadiusOpen(!radiusOpen)}
+                  className="hidden sm:flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200 hover:shadow-md transition-all"
+                >
+                  <MapPin size={16} className="text-green-600" />
+                  <span className="text-sm text-green-700 font-medium">
+                    {selectedLocation ? `${radius}km radius` : 'Set location'}
+                  </span>
+                </button>
+
+                <AnimatePresence>
+                  {radiusOpen && (
+                    <motion.div
+                      className="absolute right-0 mt-2 w-48 bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 py-2 z-50 origin-top-right"
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                    >
+                      <div className="px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        Select Search Radius
+                      </div>
+                      {[1, 3, 5, 10, 20, 50].map((r) => (
+                        <button
+                          key={r}
+                          onClick={() => {
+                            updateRadius(r);
+                            updateFilters({ radius: r });
+                            setRadiusOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-3 text-sm flex items-center justify-between hover:bg-green-50 transition-colors ${
+                            radius === r ? 'text-green-600 font-bold bg-green-50/50' : 'text-gray-600'
+                          }`}
+                        >
+                          <span>{r} km</span>
+                          {radius === r && <MapPin size={14} />}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
 

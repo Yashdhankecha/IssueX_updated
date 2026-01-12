@@ -240,7 +240,10 @@ const HomePage = () => {
                       type="text"
                       placeholder="Search issues, locations, or IDs..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        updateFilters({ search: e.target.value });
+                      }}
                       className="w-full pl-12 pr-4 py-3 lg:py-4 bg-white border border-slate-200 rounded-xl lg:rounded-2xl text-base focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 focus:outline-none shadow-sm transition-all"
                     />
                 </div>
