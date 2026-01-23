@@ -137,7 +137,7 @@ Visit `http://localhost:5173` and start reporting!
 
 <div align="center">
   
-**Made with ❤️ BY Tripod**
+**Made with ❤️ BY Tripod developers**
 
 [Star this Repo ⭐](#) • [Report Bug 🐛](#)
 
