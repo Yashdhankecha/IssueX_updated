@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ClipboardList, CheckCircle, Clock, AlertTriangle,
-  MapPin, Camera, X, Upload, Loader2, Play, Search, Filter, Timer, Users
+  MapPin, Camera, X, Upload, Loader2, Play, Search, Filter, Timer, Users, Radar, Scan
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLocation } from 'react-router-dom';
@@ -65,14 +65,14 @@ const GovIssuesPage = () => {
             workerId: selectedWorker
         });
         if (res.data.success) {
-            toast.success('Worker assigned successfully');
+            toast.success('Operative Detailed Successfully');
             fetchIssues();
             setShowAssignModal(false);
             setSelectedWorker('');
             setSelectedIssue(null);
         }
     } catch (error) {
-        toast.error('Failed to assign worker');
+        toast.error('Assignment Failed');
     }
   };
 
@@ -109,7 +109,7 @@ const GovIssuesPage = () => {
       }
     } catch (error) {
       console.error(error);
-      toast.error('Failed to load issues');
+      toast.error('Data Retrieval Failed');
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,7 @@ const GovIssuesPage = () => {
 
   const handleSubmitAction = async () => {
     if (!imageFile) {
-      toast.error('Please upload a proof photo');
+      toast.error('Visual confirmation required');
       return;
     }
 
@@ -163,40 +163,51 @@ const GovIssuesPage = () => {
           setSuccessData(res.data.data);
           fetchIssues(); // Refresh list background
         } else {
-          toast.success('Work Started!');
+          toast.success('Protocol Initiated');
           fetchIssues();
           closeModal();
         }
       }
     } catch (error) {
       console.error(error);
-      toast.error('Action failed. Try again.');
+      toast.error('Operation Failed');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const tabs = [
-    { id: 'reported', label: 'Reported', icon: AlertTriangle, color: 'text-orange-500', bg: 'bg-orange-50' },
-    { id: 'in_progress', label: 'In Progress', icon: Clock, color: 'text-blue-500', bg: 'bg-blue-50' },
-    { id: 'resolved', label: 'Sorted', icon: CheckCircle, color: 'text-green-500', bg: 'bg-green-50' },
-    { id: 'overdue', label: 'Overdue', icon: Timer, color: 'text-red-500', bg: 'bg-red-50' },
+    { id: 'reported', label: 'PENDING', icon: AlertTriangle, color: 'text-orange-400', bg: 'bg-orange-500/10' },
+    { id: 'in_progress', label: 'ACTIVE', icon: Clock, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { id: 'resolved', label: 'SORTED', icon: CheckCircle, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+    { id: 'overdue', label: 'OVERDUE', icon: Timer, color: 'text-red-400', bg: 'bg-red-500/10' },
   ];
 
   const formatOverdueDuration = (hours) => {
     if (!hours) return '';
-    if (hours < 24) return `${hours}h overdue`;
+    if (hours < 24) return `${hours}H LATE`;
     const days = Math.floor(hours / 24);
-    return `${days}d overdue`;
+    return `${days}D LATE`;
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 pb-24">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">Manage Issues</h1>
+    <div className="min-h-screen bg-[#030712] p-6 pb-24 text-white relative font-sans overflow-hidden">
+      
+       {/* Ambient Background */}
+       <div className="fixed inset-0 z-0 pointer-events-none">
+          <div className="absolute top-[10%] right-[30%] w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[100px]"></div>
+          <div className="absolute bottom-[10%] left-[10%] w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[100px]"></div>
+          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-150 contrast-150 mix-blend-overlay"></div>
+      </div>
+
+      <div className="max-w-4xl mx-auto relative z-10 pt-10">
+        <h1 className="text-2xl font-black text-white mb-6 uppercase tracking-tight flex items-center gap-2">
+            <ClipboardList className="text-blue-500"/>
+            Task Management
+        </h1>
 
         {/* Tabs */}
-        <div className="flex bg-white p-1 rounded-2xl shadow-sm mb-6 overflow-x-auto">
+        <div className="flex bg-[#0B1221]/80 backdrop-blur-md p-1 rounded-2xl border border-white/10 mb-8 overflow-x-auto scrollbar-none">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -204,12 +215,12 @@ const GovIssuesPage = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all ${isActive
-                  ? `${tab.bg} ${tab.color} font-bold shadow-sm`
-                  : 'text-slate-500 hover:bg-slate-50'
+                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl transition-all text-xs font-bold uppercase tracking-wider ${isActive
+                  ? `${tab.bg} ${tab.color} shadow-lg border border-white/5`
+                  : 'text-slate-500 hover:text-white hover:bg-white/5'
                   }`}
               >
-                <Icon size={18} />
+                <Icon size={16} />
                 <span className="whitespace-nowrap">{tab.label}</span>
               </button>
             );
@@ -219,13 +230,15 @@ const GovIssuesPage = () => {
         {/* Issue List */}
         <div className="space-y-4">
           {loading ? (
-            <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-500" /></div>
+             <div className="space-y-4">
+               {[1,2,3].map(i => <div key={i} className="h-32 bg-[#0B1221] rounded-2xl animate-pulse border border-white/5"></div>)}
+             </div>
           ) : issues.length === 0 ? (
-            <div className="text-center py-20 text-slate-400">
-              <div className="mb-4 bg-slate-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto">
-                <ClipboardList size={32} />
+            <div className="text-center py-24 text-slate-500 border-2 border-dashed border-white/5 rounded-3xl bg-white/5">
+              <div className="mb-4 bg-[#0B1221] w-20 h-20 rounded-full flex items-center justify-center mx-auto border border-white/10">
+                <Radar size={32} className="text-slate-600 opacity-50"/>
               </div>
-              No {activeTab.replace('_', ' ')} issues found.
+              <p className="text-sm font-mono uppercase">No {activeTab.replace('_', ' ')} logs found.</p>
             </div>
           ) : (
             issues.map(issue => (
@@ -234,47 +247,67 @@ const GovIssuesPage = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 key={issue._id}
-                className={`bg-white p-4 rounded-2xl shadow-sm border ${activeTab === 'overdue' ? 'border-red-200 bg-red-50/10' : 'border-slate-100'
+                className={`bg-[#0B1221]/80 backdrop-blur-xl p-5 rounded-2xl shadow-lg border relative overflow-hidden group ${activeTab === 'overdue' ? 'border-red-500/30' : 'border-white/10 hover:border-blue-500/30 transition-colors'
                   }`}
               >
-                <div className="flex gap-4">
-                  <div className="w-24 h-24 flex-shrink-0 relative">
-                    <img
-                      src={issue.images[0] || 'https://via.placeholder.com/100'}
-                      alt="Issue"
-                      className="w-full h-full rounded-xl object-cover bg-slate-100"
-                    />
+                {/* Status Indicator Line */}
+                <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+                    activeTab === 'overdue' ? 'bg-red-500' : 
+                    activeTab === 'resolved' ? 'bg-emerald-500' :
+                    activeTab === 'in_progress' ? 'bg-blue-500' : 'bg-orange-500'
+                }`}></div>
+
+                <div className="flex gap-5">
+                  <div className="w-24 h-24 flex-shrink-0 relative rounded-xl overflow-hidden border border-white/10 bg-black/50">
+                    {issue.images?.[0] ? (
+                         <img
+                          src={issue.images[0]}
+                          alt="Issue"
+                          className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                         />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-700">
+                             <Camera size={24} />
+                        </div>
+                    )}
+                    
                     {activeTab === 'overdue' && (
-                      <div className="absolute -bottom-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm flex items-center gap-1">
-                        <Timer size={10} />
+                      <div className="absolute inset-x-0 bottom-0 bg-red-600/90 text-white text-[10px] font-bold py-1 text-center uppercase tracking-wider backdrop-blur-sm">
                         {formatOverdueDuration(issue.overdueBy)}
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-bold text-slate-900 line-clamp-1 text-lg mb-1">{issue.title}</h3>
-                      <span className="text-xs text-slate-400 whitespace-nowrap">{new Date(issue.createdAt).toLocaleDateString()}</span>
-                    </div>
-                    <p className="text-sm text-slate-500 line-clamp-2 mb-3">{issue.description}</p>
-                    <div className="flex items-center gap-1 text-xs text-slate-400 mb-3">
-                      <MapPin size={12} />
-                      <span className="truncate">{issue?.location?.address || 'Location unavailable'}</span>
-                    </div>
 
-                    {issue.assignedWorker && (
-                        <div className="flex items-center gap-1 text-xs text-purple-600 font-bold mb-3 bg-purple-50 px-2 py-1 rounded-md w-fit">
-                            <Users size={12} />
-                            <span>Assigned to: {issue.assignedWorker.name}</span>
+                  <div className="flex-1 min-w-0 flex flex-col justify-between">
+                    <div>
+                        <div className="flex justify-between items-start mb-1">
+                        <h3 className="font-bold text-white line-clamp-1 text-base group-hover:text-blue-400 transition-colors">{issue.title}</h3>
+                        <span className="text-[10px] text-slate-500 font-mono whitespace-nowrap bg-white/5 px-2 py-0.5 rounded">{new Date(issue.createdAt).toLocaleDateString()}</span>
                         </div>
-                    )}
+                        <p className="text-xs text-slate-400 line-clamp-2 mb-3 leading-relaxed">{issue.description}</p>
+                        
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                             <div className="flex items-center gap-1 text-[10px] text-blue-400 font-bold bg-blue-500/10 px-2 py-1 rounded border border-blue-500/20 uppercase tracking-wide">
+                                <MapPin size={10} />
+                                <span className="truncate max-w-[150px]">{issue?.location?.address || 'Unknown Coordinates'}</span>
+                             </div>
+
+                            {issue.assignedWorker && (
+                                <div className="flex items-center gap-1 text-[10px] text-purple-400 font-bold bg-purple-500/10 px-2 py-1 rounded border border-purple-500/20 uppercase tracking-wide">
+                                    <Users size={10} />
+                                    <span>OP: {issue.assignedWorker.name}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 mt-auto">
                       {!issue.assignedWorker && (issue.status === 'reported' || issue.status === 'in_progress') && (
                         <button
                           onClick={() => handleAssignClick(issue)}
-                          className="bg-purple-100 text-purple-700 py-2 px-3 rounded-lg text-sm font-bold hover:bg-purple-200 transition-colors"
+                          className="px-4 py-2 bg-purple-500/10 text-purple-400 border border-purple-500/30 rounded-lg text-xs font-bold hover:bg-purple-500 hover:text-white transition-all uppercase tracking-wide"
+                          title="Assign Operative"
                         >
                           <Users size={16} />
                         </button>
@@ -283,22 +316,22 @@ const GovIssuesPage = () => {
                       {(activeTab === 'reported' || (activeTab === 'overdue' && issue.status === 'reported')) && (
                         <button
                           onClick={() => handleActionClick(issue, 'start')}
-                          className="flex-1 bg-slate-900 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors"
+                          className="flex-1 bg-white/5 hover:bg-white/10 text-white border border-white/10 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all uppercase tracking-wide hover:border-blue-500/50"
                         >
-                          <Play size={14} /> Start Work
+                          <Play size={12} className="text-blue-400" /> Initialize
                         </button>
                       )}
                       {(activeTab === 'in_progress' || (activeTab === 'overdue' && issue.status === 'in_progress')) && (
                         <button
                           onClick={() => handleActionClick(issue, 'resolve')}
-                          className="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-green-700 transition-colors"
+                          className="flex-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition-all uppercase tracking-wide hover:shadow-[0_0_10px_rgba(16,185,129,0.2)]"
                         >
-                          <CheckCircle size={14} /> Resolve
+                          <CheckCircle size={12} /> Confirm Fix
                         </button>
                       )}
                       {activeTab === 'resolved' && (
-                        <div className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-lg flex items-center gap-1">
-                          <CheckCircle size={12} /> Completed
+                        <div className="w-full py-2 bg-emerald-500/5 text-emerald-400 border border-emerald-500/20 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 uppercase tracking-widest">
+                          <CheckCircle size={12} /> Status: Clear
                         </div>
                       )}
                     </div>
@@ -316,62 +349,64 @@ const GovIssuesPage = () => {
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
               <motion.div 
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                  className="absolute inset-0 bg-black/80 backdrop-blur-md"
                   onClick={() => setShowAssignModal(false)}
               />
               <motion.div
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ scale: 0.9, opacity: 0 }}
-                  className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative z-10"
+                  className="bg-[#0B1221] w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-white/10 relative z-10 overflow-hidden"
               >
-                  <h2 className="text-xl font-bold text-slate-900 mb-4">Assign Issue</h2>
-                  <p className="text-sm text-slate-500 mb-4">Select a field worker to handle this issue.</p>
+                  {/* Grid bg */}
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
+
+                  <h2 className="text-lg font-black text-white mb-1 uppercase tracking-wider relative z-10">Assign Operative</h2>
+                  <p className="text-xs text-slate-500 mb-6 font-mono relative z-10">Select field agent for deployment.</p>
                   
                   {fieldWorkers.length === 0 ? (
-                      <div className="text-center py-4 bg-slate-50 rounded-xl mb-4">
-                          <p className="text-slate-500 font-medium">No field workers found.</p>
-                          <p className="text-xs text-slate-400 mt-1">Add users with 'field_worker' role.</p>
+                      <div className="text-center py-6 bg-[#0F172A] rounded-xl mb-4 border border-white/5 relative z-10">
+                          <p className="text-slate-400 font-bold text-xs uppercase">No personnel available.</p>
                       </div>
                   ) : (
-                      <div className="space-y-2 mb-6 max-h-60 overflow-y-auto">
+                      <div className="space-y-2 mb-6 max-h-60 overflow-y-auto pr-2 custom-scrollbar relative z-10">
                           {fieldWorkers.map(worker => (
                               <div 
                                   key={worker._id}
                                   onClick={() => setSelectedWorker(worker._id)}
                                   className={`p-3 rounded-xl border cursor-pointer flex items-center gap-3 transition-all ${
                                       selectedWorker === worker._id 
-                                      ? 'border-purple-500 bg-purple-50' 
-                                      : 'border-slate-100 hover:bg-slate-50'
+                                      ? 'border-purple-500 bg-purple-500/10 shadow-[0_0_10px_rgba(168,85,247,0.2)]' 
+                                      : 'border-white/5 bg-[#0F172A] hover:bg-white/5'
                                   }`}
                               >
-                                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                                      selectedWorker === worker._id ? 'bg-purple-200 text-purple-700' : 'bg-slate-200 text-slate-600'
+                                  <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xs font-bold border border-white/10 ${
+                                      selectedWorker === worker._id ? 'bg-purple-500 text-white' : 'bg-black/40 text-slate-400'
                                   }`}>
                                       {worker.name.charAt(0)}
                                   </div>
                                   <div>
-                                      <div className="font-bold text-slate-800 text-sm">{worker.name}</div>
-                                      <div className="text-xs text-slate-500">{worker.email}</div>
+                                      <div className={`font-bold text-sm ${selectedWorker === worker._id ? 'text-white' : 'text-slate-300'}`}>{worker.name}</div>
+                                      <div className="text-[10px] text-slate-500 font-mono">{worker.email}</div>
                                   </div>
                               </div>
                           ))}
                       </div>
                   )}
 
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 relative z-10">
                       <button 
                           onClick={() => setShowAssignModal(false)}
-                          className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200"
+                          className="flex-1 py-3 bg-white/5 text-slate-400 font-bold rounded-xl hover:bg-white/10 hover:text-white transition-colors text-xs uppercase tracking-wide"
                       >
-                          Cancel
+                          Abort
                       </button>
                       <button 
                           onClick={submitAssignment}
                           disabled={!selectedWorker}
-                          className="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-purple-900/20 text-xs uppercase tracking-wide border border-purple-400/20"
                       >
-                          Assign
+                          Confirm
                       </button>
                   </div>
               </motion.div>
@@ -382,7 +417,7 @@ const GovIssuesPage = () => {
           <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/80 backdrop-blur-md"
               onClick={closeModal}
             />
 
@@ -391,32 +426,41 @@ const GovIssuesPage = () => {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="bg-white w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6 shadow-2xl relative z-10"
+              className="bg-[#0B1221] w-full max-w-md rounded-t-[2rem] sm:rounded-[2rem] p-6 shadow-2xl relative z-10 border border-white/10 overflow-hidden"
             >
-              <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-6 sm:hidden" />
+              {/* Scanline effect */}
+              <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:4px_4px] pointer-events-none"></div>
+
+              <div className="w-12 h-1 bg-white/10 rounded-full mx-auto mb-6 sm:hidden" />
 
               {!successData ? (
                 <>
-                  <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-slate-900">
-                      {actionType === 'start' ? 'Start Work' : 'Resolve Issue'}
+                  <div className="flex justify-between items-center mb-6 relative z-10">
+                    <h2 className="text-lg font-black text-white uppercase tracking-wider flex items-center gap-2">
+                       {actionType === 'start' ? <Play className="text-blue-500" size={18}/> : <CheckCircle className="text-emerald-500" size={18}/>}
+                      {actionType === 'start' ? 'Initiate Protocol' : 'Verify Resolution'}
                     </h2>
-                    <button onClick={closeModal} className="p-2 bg-slate-100 rounded-full hover:bg-slate-200">
-                      <X size={20} />
+                    <button onClick={closeModal} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+                      <X size={18} />
                     </button>
                   </div>
 
-                  <div className="space-y-6">
-                    <div onClick={() => fileInputRef.current?.click()} className="border-4 border-dashed border-slate-200 rounded-2xl h-64 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-slate-50 transition-all relative overflow-hidden group">
+                  <div className="space-y-6 relative z-10">
+                    <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-white/10 rounded-2xl h-64 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500/50 hover:bg-[#0F172A] transition-all relative overflow-hidden group bg-black/20">
                       {imagePreview ? (
-                        <img src={imagePreview} className="w-full h-full object-cover" alt="Preview" />
+                        <div className="relative w-full h-full">
+                             <img src={imagePreview} className="w-full h-full object-cover opacity-80" alt="Preview" />
+                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-center p-4">
+                                <span className="text-xs font-mono text-emerald-400 flex items-center gap-1"><Scan size={12}/> IMAGE LOADED</span>
+                             </div>
+                        </div>
                       ) : (
                         <>
-                          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-                            <Camera size={32} className="text-slate-400" />
+                          <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)]">
+                            <Camera size={28} className="text-blue-400" />
                           </div>
-                          <p className="font-bold text-slate-500">Upload Photo</p>
-                          <p className="text-xs text-slate-400 mt-1">Click to browse</p>
+                          <p className="font-bold text-slate-300 text-sm uppercase tracking-wide">Upload Evidence</p>
+                          <p className="text-[10px] text-slate-500 mt-1 font-mono">TAP TO ACTIVATE CAMERA</p>
                         </>
                       )}
                       <input
@@ -428,47 +472,52 @@ const GovIssuesPage = () => {
                       />
                     </div>
 
-                    <div className="bg-blue-50 p-4 rounded-xl flex gap-3">
-                      <div className="text-blue-500 mt-0.5"><AlertTriangle size={18} /></div>
-                      <div className="text-sm text-blue-700">
+                    <div className="bg-blue-500/5 p-4 rounded-xl flex gap-3 border border-blue-500/10">
+                      <div className="text-blue-400 mt-0.5"><AlertTriangle size={16} /></div>
+                      <div className="text-xs text-blue-300 leading-relaxed font-mono">
                         {actionType === 'start'
-                          ? "Uploading a 'Before' photo notifies the user that work has begun."
-                          : "Uploading an 'After' photo marks this issue as sorted and notifies the user."}
+                          ? "REQUIRED: UPLOAD 'BEFORE' STATE TO COMMENCE OPERATION."
+                          : "REQUIRED: UPLOAD 'AFTER' STATE FOR AI VERIFICATION."}
                       </div>
                     </div>
 
                     <button
                       onClick={handleSubmitAction}
                       disabled={isSubmitting}
-                      className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center hover:bg-slate-800 disabled:opacity-50"
+                      className="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-sm uppercase tracking-widest flex items-center justify-center hover:bg-blue-500 disabled:opacity-50 shadow-lg shadow-blue-900/20 border border-blue-400/20"
                     >
-                      {isSubmitting ? <Loader2 className="animate-spin" /> : 'Confirm & Upload'}
+                      {isSubmitting ? (
+                          <div className="flex items-center gap-2">
+                              <Loader2 className="animate-spin" size={16} /> PROCESSING DATA...
+                          </div>
+                      ) : 'Confirm Upload'}
                     </button>
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col items-center text-center py-6">
-                  <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6">
-                    <CheckCircle className="text-green-600 w-10 h-10" />
+                <div className="flex flex-col items-center text-center py-6 relative z-10">
+                  <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 border border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                    <CheckCircle className="text-emerald-500 w-10 h-10" />
                   </div>
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2">Analysis Complete</h2>
-                  <p className="text-slate-500 mb-8">The AI has analyzed your proof and verified the fix.</p>
+                  <h2 className="text-xl font-black text-white mb-2 uppercase tracking-wide">Analysis Complete</h2>
+                  <p className="text-slate-400 mb-8 text-sm font-mono">Verification Protocol Successful.</p>
 
-                  <div className="w-full bg-slate-50 rounded-2xl p-6 mb-8 border border-slate-100">
-                    <div className="text-sm text-slate-400 font-medium mb-1 uppercase tracking-wider">Confidence Score</div>
-                    <div className="text-4xl font-extrabold text-green-500">
+                  <div className="w-full bg-[#0F172A] rounded-2xl p-6 mb-8 border border-white/5 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/10 blur-xl rounded-full"></div>
+                    <div className="text-[10px] text-slate-500 font-bold mb-1 uppercase tracking-widest">AI Confidence Level</div>
+                    <div className="text-5xl font-black text-emerald-400 tracking-tighter">
                       {successData.aiResolutionScore}%
                     </div>
-                    <div className="text-xs text-green-600 font-medium mt-2 bg-green-100 inline-block px-3 py-1 rounded-full">
-                      High Confidence Match
+                    <div className="text-[10px] text-emerald-400 font-bold mt-2 bg-emerald-500/10 inline-block px-3 py-1 rounded border border-emerald-500/20 uppercase tracking-wide shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                       Match Confirmed
                     </div>
                   </div>
 
                   <button
                     onClick={closeModal}
-                    className="w-full bg-black text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-800"
+                    className="w-full bg-slate-800 text-white py-4 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-slate-700 border border-white/10"
                   >
-                    Done
+                    Close Protocol
                   </button>
                 </div>
               )}

@@ -68,7 +68,7 @@ const BottomNav = () => {
       );
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-gray-200 py-2 px-4 z-[60] lg:hidden shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+    <div className="fixed bottom-0 left-0 right-0 bg-[#0B1221]/95 backdrop-blur-xl border-t border-white/10 py-2 px-4 z-[60] lg:hidden">
       <div className="flex justify-around items-end">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -76,12 +76,12 @@ const BottomNav = () => {
           
           if (item.isFab) {
              return (
-              <div key={item.name} className="relative -top-6">
+              <div key={item.name} className="relative -top-5">
                  <Link
                   to={item.href}
-                  className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/40 hover:scale-105 transition-transform"
+                  className="flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:scale-105 transition-transform border border-white/20"
                 >
-                  <Icon size={28} />
+                  <Icon size={26} />
                 </Link>
               </div>
              );
@@ -92,12 +92,12 @@ const BottomNav = () => {
               <button
                 key={item.name}
                 onClick={item.onClick}
-                className="flex flex-col items-center space-y-1 p-2 min-w-[64px] text-red-500 hover:text-red-600"
+                className="flex flex-col items-center space-y-1 p-2 min-w-[64px] text-red-400 hover:text-red-300"
               >
                 <div className="relative">
-                  <Icon size={24} strokeWidth={2} />
+                  <Icon size={22} strokeWidth={2} />
                 </div>
-                <span className="text-[10px] font-medium text-red-500">
+                <span className="text-[10px] font-medium">
                   {item.name}
                 </span>
               </button>
@@ -108,26 +108,25 @@ const BottomNav = () => {
             <Link
               key={item.name}
               to={item.href}
-              className={`flex flex-col items-center space-y-1 p-2 min-w-[64px] ${
-                active ? 'text-blue-600' : 'text-gray-400 hover:text-gray-600'
+              className={`flex flex-col items-center space-y-1 p-2 min-w-[64px] transition-colors ${
+                active ? 'text-blue-400' : 'text-slate-500 hover:text-slate-300'
               }`}
             >
               <div className="relative">
-                <Icon size={24} strokeWidth={active ? 2.5 : 2} />
+                <Icon size={22} strokeWidth={active ? 2.5 : 2} />
                 {item.badge > 0 && (
-                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                     {item.badge > 9 ? '9+' : item.badge}
                   </span>
                 )}
               </div>
-              <span className={`text-[10px] font-medium ${active ? 'text-blue-600' : 'text-gray-500'}`}>
+              <span className={`text-[10px] font-medium ${active ? 'text-blue-400' : 'text-slate-500'}`}>
                 {item.name}
               </span>
             </Link>
           );
         })}
       </div>
-      {/* Safe area for iPhone home indicator */}
       <div className="h-1 w-full" /> 
     </div>
   );

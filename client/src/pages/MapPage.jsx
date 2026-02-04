@@ -5,7 +5,8 @@ import L from 'leaflet';
 import { 
   Filter, MapPin, Navigation, Layers, ZoomIn, ZoomOut, Search, X, 
   Settings, Eye, Clock, CheckCircle, AlertCircle, ChevronDown, 
-  Maximize2, Minimize2, ArrowLeft, Heart, Share2, Compass
+  Maximize2, Minimize2, ArrowLeft, Heart, Share2, Compass, Target,
+  Crosshair
 } from 'lucide-react';
 import { useIssue } from '../contexts/IssueContext';
 import { useLocation } from '../contexts/LocationContext';
@@ -34,7 +35,7 @@ const MapPage = () => {
   // UI States
   const [showFilters, setShowFilters] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState(null);
-  const [mapTheme, setMapTheme] = useState('light'); // 'light', 'dark', 'satellite'
+  const [mapTheme, setMapTheme] = useState('dark'); // Default to dark for consistency
   const [searchQuery, setSearchQuery] = useState('');
   
   // Map States
@@ -84,33 +85,34 @@ const MapPage = () => {
     return L.divIcon({
       html: `
         <div class="relative group">
-          <div class="w-8 h-8 rounded-full border-2 border-white shadow-lg flex items-center justify-center transition-transform hover:scale-110" style="background-color: ${color}">
-            ${status === 'resolved' ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : iconSvg}
+          <div class="w-10 h-10 rounded-xl border-2 border-[#030712] shadow-[0_0_15px_${color}] flex items-center justify-center transition-transform hover:scale-110" style="background-color: ${color}">
+            ${status === 'resolved' ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : iconSvg}
           </div>
-          ${isActive ? `<div class="absolute inset-0 rounded-full animate-ping opacity-75" style="background-color: ${color}"></div>` : ''}
-          <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-3 bg-black/20 blur-[1px]"></div>
+          ${isActive ? `<div class="absolute inset-0 rounded-xl animate-ping opacity-50" style="background-color: ${color}"></div>` : ''}
+          <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-0.5 h-4 bg-${color} opacity-50"></div>
         </div>
       `,
       className: 'custom-map-marker', 
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32]
+      iconSize: [40, 40],
+      iconAnchor: [20, 40],
+      popupAnchor: [0, -40]
     });
   };
 
   return (
-    <div className="relative w-full h-screen bg-slate-100 overflow-hidden font-sans">
+    <div className="relative w-full h-screen bg-[#030712] overflow-hidden font-sans">
       
       {/* --- Fullscreen Map Layer --- */}
       <MapContainer 
         center={viewState.center} 
         zoom={viewState.zoom} 
         zoomControl={false} 
-        className="absolute inset-0 z-0 outline-none pb-20 lg:pb-0"
+        className="absolute inset-0 z-0 outline-none pb-20 lg:pb-0 bg-[#030712]"
       >
         <TileLayer 
             url={tileLayers[mapTheme]} 
             attribution='&copy; CARTO' 
+            className={mapTheme === 'dark' ? 'brightness-75 contrast-125' : ''}
         />
         <MapController center={viewState.center} zoom={viewState.zoom} />
 
@@ -120,12 +122,12 @@ const MapPage = () => {
                 <Circle 
                     center={[selectedLocation.lat,selectedLocation.lng]} 
                     radius={radius * 1000}
-                    pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.08, weight: 1, dashArray: '5, 10' }} 
+                    pathOptions={{ color: '#3b82f6', fillColor: '#3b82f6', fillOpacity: 0.1, weight: 1, dashArray: '10, 20' }} 
                 />
                 <Marker 
                     position={[selectedLocation.lat,selectedLocation.lng]}
                     icon={L.divIcon({
-                        html: `<div class="w-4 h-4 bg-blue-500 rounded-full border-[3px] border-white shadow-md relative"><div class="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-50"></div></div>`,
+                        html: `<div class="w-4 h-4 bg-blue-500 rounded-full border-[2px] border-white shadow-[0_0_20px_#3b82f6] relative"><div class="absolute inset-0 bg-blue-400 rounded-full animate-ping opacity-50"></div></div>`,
                         className: ''
                     })}
                 />
@@ -150,7 +152,7 @@ const MapPage = () => {
         <div className="max-w-7xl mx-auto flex items-start gap-4 pointer-events-auto">
             <button 
                 onClick={() => navigate(-1)} 
-                className="p-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/40 text-slate-700 hover:bg-white transition-all transform hover:scale-105 active:scale-95"
+                className="p-3 bg-[#0B1221]/80 backdrop-blur-md rounded-2xl shadow-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-all transform hover:scale-105 active:scale-95"
             >
                 <ArrowLeft size={20} />
             </button>
@@ -158,12 +160,12 @@ const MapPage = () => {
             {/* Search Bar */}
             <div className="flex-1 max-w-md relative group">
                 <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                    <Search className="h-5 w-5 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                 </div>
                 <input 
                     type="text" 
-                    placeholder="Search area (Press Enter)..." 
-                    className="w-full pl-10 pr-4 py-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/40 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium pointer-events-auto"
+                    placeholder="Search coordinates or sector..." 
+                    className="w-full pl-10 pr-4 py-3 bg-[#0B1221]/80 backdrop-blur-md rounded-2xl shadow-lg border border-white/10 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all font-medium pointer-events-auto"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={async (e) => {
@@ -184,7 +186,7 @@ const MapPage = () => {
             {/* Filters Toggle Button */}
             <button 
                 onClick={() => setShowFilters(!showFilters)}
-                className={`p-3 rounded-2xl shadow-lg border border-white/40 transition-all transform hover:scale-105 active:scale-95 ${showFilters ? 'bg-blue-600 text-white' : 'bg-white/90 text-slate-700 backdrop-blur-md hover:bg-white'}`}
+                className={`p-3 rounded-2xl shadow-lg border border-white/10 transition-all transform hover:scale-105 active:scale-95 ${showFilters ? 'bg-blue-600 text-white shadow-blue-900/20' : 'bg-[#0B1221]/80 text-slate-400 backdrop-blur-md hover:text-white hover:bg-white/10'}`}
             >
                 <Filter size={20} />
             </button>
@@ -193,17 +195,17 @@ const MapPage = () => {
 
       {/* --- Right Controls Helper --- */}
       <div className="absolute top-1/2 right-4 -translate-y-1/2 z-20 flex flex-col gap-3 pointer-events-none">
-         <div className="pointer-events-auto flex flex-col gap-3 bg-white/10 backdrop-blur p-2 rounded-2xl border border-white/20 shadow-xl">
+         <div className="pointer-events-auto flex flex-col gap-3 bg-[#0B1221]/80 backdrop-blur p-2 rounded-2xl border border-white/10 shadow-xl">
             <button 
                 onClick={() => setViewState(prev => ({ ...prev, zoom: Math.min(prev.zoom + 1, 18) }))}
-                className="p-3 bg-white text-slate-700 rounded-xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition-colors"
+                className="p-3 bg-white/5 text-slate-400 rounded-xl hover:bg-blue-500/20 hover:text-blue-400 shadow-sm transition-colors border border-white/5"
                 title="Zoom In"
             >
                 <ZoomIn size={20} />
             </button>
             <button 
                 onClick={() => setViewState(prev => ({ ...prev, zoom: Math.max(prev.zoom - 1, 3) }))}
-                className="p-3 bg-white text-slate-700 rounded-xl hover:bg-blue-50 hover:text-blue-600 shadow-sm transition-colors"
+                className="p-3 bg-white/5 text-slate-400 rounded-xl hover:bg-blue-500/20 hover:text-blue-400 shadow-sm transition-colors border border-white/5"
                 title="Zoom Out"
             >
                 <ZoomOut size={20} />
@@ -212,7 +214,7 @@ const MapPage = () => {
 
          <button 
             onClick={() => setMapTheme(prev => prev === 'light' ? 'dark' : prev === 'dark' ? 'satellite' : 'light')}
-            className="pointer-events-auto p-3 bg-white text-slate-700 rounded-2xl shadow-xl hover:bg-slate-50 transition-all active:scale-95 border-2 border-slate-100"
+            className="pointer-events-auto p-3 bg-[#0B1221]/80 text-slate-400 hover:text-white rounded-2xl shadow-xl hover:bg-white/10 transition-all active:scale-95 border border-white/10 backdrop-blur"
             title="Switch Map Theme"
          >
             <Layers size={20} />
@@ -222,10 +224,10 @@ const MapPage = () => {
             onClick={() => {
                 if(selectedLocation) setViewState({center: [selectedLocation.lat, selectedLocation.lng], zoom: 16})
             }}
-            className="pointer-events-auto p-3 bg-blue-600 text-white rounded-2xl shadow-xl shadow-blue-500/30 transition-all hover:bg-blue-700 active:scale-95"
+            className="pointer-events-auto p-3 bg-blue-600 text-white rounded-2xl shadow-xl shadow-blue-500/30 transition-all hover:bg-blue-500 active:scale-95"
             title="Locate Me"
          >
-            <Navigation size={20} />
+            <Crosshair size={20} />
          </button>
       </div>
 
@@ -236,37 +238,37 @@ const MapPage = () => {
                 initial={{ opacity: 0, y: -20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                className="absolute top-24 left-4 right-4 md:left-20 md:right-auto md:w-80 z-20 bg-white/95 backdrop-blur-xl p-5 rounded-3xl shadow-2xl border border-white/50"
+                className="absolute top-24 left-4 right-4 md:left-20 md:right-auto md:w-80 z-20 bg-[#0B1221]/90 backdrop-blur-2xl p-6 rounded-3xl shadow-2xl border border-white/10"
             >
-               <div className="flex justify-between items-center mb-4">
-                  <h3 className="font-bold text-slate-800">Filter Issues</h3>
-                  <button onClick={() => updateFilters({ status: 'all', category: 'all' })} className="text-xs font-semibold text-blue-600 hover:text-blue-700">Reset</button>
+               <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-bold text-white flex items-center gap-2"><Filter size={14} className="text-blue-500"/> Filter Matrix</h3>
+                  <button onClick={() => updateFilters({ status: 'all', category: 'all' })} className="text-[10px] font-bold text-blue-400 hover:text-blue-300 uppercase tracking-wider border border-blue-500/30 px-2 py-1 rounded bg-blue-500/10">Reset</button>
                </div>
                
-               <div className="space-y-4">
+               <div className="space-y-6">
                   <div>
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Status</label>
-                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 block">Status Protocol</label>
+                    <div className="flex bg-black/20 p-1 rounded-xl border border-white/5">
                         {['all', 'reported', 'in_progress', 'resolved'].map(status => (
                             <button
                                 key={status}
                                 onClick={() => updateFilters({ ...filters, status })}
-                                className={`flex-1 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${filters.status === status ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                className={`flex-1 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all ${filters.status === status ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-slate-500 hover:text-slate-300'}`}
                             >
-                                {status.replace('_', ' ')}
+                                {status === 'all' ? 'All' : status.replace('_', ' ')}
                             </button>
                         ))}
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Category</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 block">Category Type</label>
+                    <div className="grid grid-cols-2 gap-2">
                         {['all', 'roads', 'lighting', 'water', 'cleanliness', 'safety', 'obstructions'].map(cat => (
                             <button
                                 key={cat}
                                 onClick={() => updateFilters({ ...filters, category: cat })}
-                                className={`py-1.5 px-2 rounded-lg text-[10px] font-bold capitalize transition-all border ${filters.category === cat ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 text-slate-500 border-slate-100 hover:bg-slate-100'}`}
+                                className={`py-2 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all border ${filters.category === cat ? 'bg-blue-500/10 text-blue-400 border-blue-500/30' : 'bg-white/5 text-slate-500 border-white/5 hover:bg-white/10'}`}
                             >
                                 {cat}
                             </button>
@@ -275,11 +277,11 @@ const MapPage = () => {
                   </div>
 
                   <div>
-                     <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Radius: {radius}km</label>
+                     <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3 block">Scan Radius: <span className="text-white">{radius}km</span></label>
                      <input 
                        type="range" min="1" max="20" value={radius} 
                        onChange={(e) => updateRadius(Number(e.target.value))}
-                       className="w-full accent-blue-600 h-1.5 bg-slate-200 rounded-full appearance-none cursor-pointer" 
+                       className="w-full accent-blue-500 h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer" 
                      />
                   </div>
                </div>
@@ -297,46 +299,54 @@ const MapPage = () => {
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 className="absolute bottom-4 left-4 right-4 md:left-auto md:right-16 md:w-96 md:bottom-8 z-30"
             >
-                <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
-                    <div className="relative h-32 bg-slate-200">
+                <div className="bg-[#0F172A] rounded-3xl shadow-2xl overflow-hidden border border-white/10 relative">
+                    {/* Glow Effect */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
+
+                    <div className="relative h-36 bg-black/50 group">
                         {selectedIssue.images?.[0] ? (
-                            <img src={selectedIssue.images[0]} alt="" className="w-full h-full object-cover" />
+                            <img src={selectedIssue.images[0]} alt="" className="w-full h-full object-cover opacity-80" />
                         ) : (
-                            <div className="absolute inset-0 flex items-center justify-center text-slate-400"><MapPin size={32} /></div>
+                            <div className="absolute inset-0 flex items-center justify-center text-slate-600 bg-[#0B1221]"><MapPin size={32} /></div>
                         )}
+                         <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A] to-transparent"></div>
                         <button 
                             onClick={() => setSelectedIssue(null)}
-                            className="absolute top-2 right-2 p-1.5 bg-black/50 hover:bg-black/70 rounded-full text-white backdrop-blur transition-colors"
+                            className="absolute top-3 right-3 p-1.5 bg-black/40 hover:bg-black/60 rounded-full text-white backdrop-blur transition-colors border border-white/10"
                         >
                             <X size={16} />
                         </button>
-                        <div className="absolute bottom-2 left-3">
-                            <span className="px-2 py-0.5 rounded-lg bg-white/90 backdrop-blur text-xs font-bold shadow-sm uppercase tracking-wide text-slate-800">
+                        <div className="absolute bottom-3 left-4">
+                            <span className="px-2 py-0.5 rounded bg-blue-500/20 border border-blue-500/30 text-[10px] font-bold uppercase tracking-wide text-blue-400 backdrop-blur-md">
                                 {selectedIssue.category}
                             </span>
                         </div>
                     </div>
                     
-                    <div className="p-4">
+                    <div className="p-5 relative z-10">
                         <div className="flex justify-between items-start mb-2">
-                             <h2 className="font-bold text-lg text-slate-900 leading-tight line-clamp-1">{selectedIssue.title}</h2>
-                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${selectedIssue.status === 'resolved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                {selectedIssue.status}
+                             <h2 className="font-bold text-lg text-white leading-tight line-clamp-1">{selectedIssue.title}</h2>
+                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${
+                                 selectedIssue.status === 'resolved' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 
+                                 selectedIssue.status === 'in_progress' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 
+                                 'bg-red-500/10 text-red-400 border-red-500/20'
+                             }`}>
+                                {selectedIssue.status.replace('_', ' ')}
                              </span>
                         </div>
-                        <p className="text-sm text-slate-500 line-clamp-2 mb-4">{selectedIssue.description}</p>
+                        <p className="text-xs text-slate-400 line-clamp-2 mb-5 leading-relaxed font-mono">{selectedIssue.description}</p>
                         
-                        <div className="flex items-center justify-between pt-3 border-t border-slate-50">
-                             <div className="flex items-center text-xs text-slate-400">
-                                <Clock size={12} className="mr-1" />
+                        <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                             <div className="flex items-center text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                                <Clock size={12} className="mr-1.5 text-slate-600" />
                                 {formatDistanceToNow(new Date(selectedIssue.createdAt))} ago
                              </div>
                              <button 
                                 onClick={() => navigate(`/issue/${selectedIssue._id || selectedIssue.id}`)}
-                                className="flex items-center text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-xl hover:bg-blue-100 transition-colors"
+                                className="flex items-center text-xs font-bold text-white bg-blue-600 px-4 py-2 rounded-xl hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20"
                              >
-                                Details
-                                <ArrowLeft size={14} className="ml-1 rotate-180" />
+                                ACCESS DATA
+                                <ArrowLeft size={12} className="ml-1.5 rotate-180" />
                              </button>
                         </div>
                     </div>
@@ -347,8 +357,11 @@ const MapPage = () => {
 
       {/* --- Loading State --- */}
       {loading && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/50 backdrop-blur-sm">
-             <div className="animate-spin w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full" />
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#030712]/80 backdrop-blur-sm">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4 shadow-[0_0_20px_rgba(59,130,246,0.3)]"></div>
+                <p className="text-blue-400 font-mono text-xs animate-pulse tracking-widest">SATELLITE SYNC...</p>
+             </div>
           </div>
       )}
     </div>

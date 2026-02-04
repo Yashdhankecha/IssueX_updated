@@ -4,7 +4,8 @@ import {
     BarChart3, CheckCircle, Clock, AlertTriangle,
     TrendingUp, Activity, PieChart, Users, Shield,
     AlertCircle, Calendar, ChevronRight, Settings,
-    Filter, RefreshCw, Timer, Zap, Trash2, Bell, Crown
+    Filter, RefreshCw, Timer, Zap, Trash2, Bell, Crown,
+    Cpu, Database, Terminal
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
@@ -48,7 +49,7 @@ const ManagerDashboard = () => {
             }
         } catch (error) {
             console.error(error);
-            toast.error('Failed to load dashboard data');
+            toast.error('Data Uplink Failed');
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -62,62 +63,59 @@ const ManagerDashboard = () => {
                 maxInProgressHours
             });
             if (res.data.success) {
-                toast.success(`Threshold for ${department} updated`);
+                toast.success(`Protocol Updated: ${department}`);
                 fetchDashboardData();
                 setShowThresholdModal(false);
             }
         } catch (error) {
-            toast.error('Failed to update threshold');
+            toast.error('Failed to update protocol');
         }
     };
 
     const handleSendReminder = async (issueId) => {
         try {
             setSendingReminder(issueId);
-            // Use the shared reminder endpoint which sends notifications to the department
             const res = await api.post(`/api/admin/issues/${issueId}/remind`);
 
             if (res.data.success) {
-                toast.success('Reminder sent to department');
-                // Optional: We can still escalate priority locally or via another call if needed, 
-                // but the user specifically requested notifications.
+                toast.success('Priority Signal Sent');
                 fetchDashboardData();
             }
         } catch (error) {
             console.error(error);
-            toast.error(error.response?.data?.message || 'Failed to send reminder');
+            toast.error(error.response?.data?.message || 'Signal Failed');
         } finally {
             setSendingReminder(null);
         }
     };
 
     const formatDuration = (hours) => {
-        if (hours < 24) return `${hours}h`;
+        if (hours < 24) return `${hours}H`;
         const days = Math.floor(hours / 24);
         const remainingHours = hours % 24;
-        return remainingHours > 0 ? `${days}d ${remainingHours}h` : `${days}d`;
+        return remainingHours > 0 ? `${days}D ${remainingHours}H` : `${days}D`;
     };
 
     const getDepartmentLabel = (dept) => {
         const labels = {
-            roads: '🛣️ Roads',
-            lighting: '💡 Lighting',
-            water: '💧 Water',
-            cleanliness: '🧹 Cleanliness',
-            safety: '🛡️ Safety',
-            obstructions: '🚧 Obstructions'
+            roads: 'ROADS',
+            lighting: 'LIGHTING',
+            water: 'WATER',
+            cleanliness: 'SANITATION',
+            safety: 'SAFETY',
+            obstructions: 'OBSTRUCTIONS'
         };
-        return labels[dept] || dept;
+        return labels[dept] || dept.toUpperCase();
     };
 
     const getSeverityColor = (severity) => {
         const colors = {
-            low: 'text-green-600 bg-green-50',
-            medium: 'text-yellow-600 bg-yellow-50',
-            high: 'text-orange-600 bg-orange-50',
-            critical: 'text-red-600 bg-red-50'
+            low: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+            medium: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
+            high: 'text-orange-400 bg-orange-500/10 border-orange-500/20',
+            critical: 'text-red-400 bg-red-500/10 border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.2)]'
         };
-        return colors[severity] || 'text-slate-600 bg-slate-50';
+        return colors[severity] || 'text-slate-400 bg-slate-500/10 border-slate-500/20';
     };
 
     const StatCard = ({ title, value, icon: Icon, color, bg, subtitle, trend }) => (
@@ -125,17 +123,18 @@ const ManagerDashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             whileHover={{ scale: 1.02 }}
-            className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden"
+            className="bg-[#0B1221]/80 backdrop-blur-xl p-6 rounded-[2rem] shadow-lg border border-white/10 relative overflow-hidden group"
         >
-            <div className={`absolute top-0 right-0 p-4 opacity-10 ${color}`}>
-                <Icon size={64} />
-            </div>
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${bg} ${color}`}>
+            <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-5 transition-transform group-hover:scale-110 ${color.replace('text-', 'bg-')}`} />
+            
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 border border-white/5 ${bg} ${color}`}>
                 <Icon size={24} />
             </div>
-            <h3 className="text-slate-500 font-bold text-sm uppercase tracking-wider mb-1">{title}</h3>
-            <div className="text-4xl font-black text-slate-900 mb-2">{value}</div>
-            {subtitle && <div className="text-xs font-bold text-slate-400">{subtitle}</div>}
+            
+            <h3 className="text-slate-500 font-bold text-[10px] uppercase tracking-widest mb-1">{title}</h3>
+            <div className="text-4xl font-black text-white mb-2 tracking-tight">{value}</div>
+            
+            {subtitle && <div className="text-[10px] font-mono text-slate-400 border-t border-white/5 pt-2 uppercase tracking-wide">{subtitle}</div>}
         </motion.div>
     );
 
@@ -148,7 +147,7 @@ const ManagerDashboard = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
                 onClick={() => setShowThresholdModal(false)}
             >
                 <motion.div
@@ -156,53 +155,55 @@ const ManagerDashboard = () => {
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.9, opacity: 0 }}
                     onClick={(e) => e.stopPropagation()}
-                    className="bg-white rounded-[2rem] p-6 w-full max-w-md shadow-2xl"
+                    className="bg-[#0B1221] rounded-[2rem] p-8 w-full max-w-md shadow-2xl border border-white/10 relative overflow-hidden"
                 >
-                    <h3 className="text-xl font-black text-slate-900 mb-2">
-                        {getDepartmentLabel(selectedDepartment?.department)} - Settings
-                    </h3>
-                    <p className="text-slate-500 text-sm mb-6">Configure operational thresholds for this department.</p>
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
 
-                    <div className="space-y-6">
+                    <h3 className="text-lg font-black text-white mb-2 uppercase tracking-wide relative z-10">
+                        {getDepartmentLabel(selectedDepartment?.department)} - Protocol
+                    </h3>
+                    <p className="text-slate-500 text-xs mb-8 font-mono relative z-10">Define operational limits for anomaly detection.</p>
+
+                    <div className="space-y-6 relative z-10">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">
-                                Max Pending Time (hours)
+                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                                Max Pending Time (Hours)
                             </label>
                             <input
                                 type="number"
                                 value={pendingHours}
                                 onChange={(e) => setPendingHours(parseInt(e.target.value) || 1)}
                                 min="1"
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all font-bold text-slate-900"
+                                className="w-full px-4 py-3 rounded-xl bg-[#0F172A] border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all font-bold text-white text-sm"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">
-                                Max In-Progress Time (hours)
+                            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">
+                                Max Active Time (Hours)
                             </label>
                             <input
                                 type="number"
                                 value={inProgressHours}
                                 onChange={(e) => setInProgressHours(parseInt(e.target.value) || 1)}
                                 min="1"
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all font-bold text-slate-900"
+                                className="w-full px-4 py-3 rounded-xl bg-[#0F172A] border border-white/10 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 transition-all font-bold text-white text-sm"
                             />
                         </div>
                     </div>
 
-                    <div className="flex gap-3 mt-8">
+                    <div className="flex gap-3 mt-8 relative z-10">
                         <button
                             onClick={() => setShowThresholdModal(false)}
-                            className="flex-1 px-4 py-3 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 transition-colors"
+                            className="flex-1 px-4 py-3 rounded-xl border border-white/10 bg-white/5 font-bold text-slate-400 hover:text-white hover:bg-white/10 transition-colors text-xs uppercase tracking-wide"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={() => handleUpdateThreshold(selectedDepartment?.department, pendingHours, inProgressHours)}
-                            className="flex-1 px-4 py-3 rounded-xl bg-indigo-600 font-bold text-white hover:bg-indigo-700 transition-colors"
+                            className="flex-1 px-4 py-3 rounded-xl bg-blue-600 font-bold text-white hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20 text-xs uppercase tracking-wide border border-blue-400/20"
                         >
-                            Save Settings
+                            Confirm Updates
                         </button>
                     </div>
                 </motion.div>
@@ -212,10 +213,10 @@ const ManagerDashboard = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#030712] flex items-center justify-center">
                 <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-slate-500 font-medium">Loading manager dashboard...</p>
+                    <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-4 shadow-[0_0_20px_rgba(59,130,246,0.3)]"></div>
+                    <p className="text-blue-400 font-mono text-xs animate-pulse tracking-widest">INITIALIZING MANAGER CONSOLE...</p>
                 </div>
             </div>
         );
@@ -224,117 +225,128 @@ const ManagerDashboard = () => {
     const totalOverdue = (stats.overdue?.pending?.length || 0) + (stats.overdue?.inProgress?.length || 0);
 
     return (
-        <div className="min-h-screen bg-slate-50 p-6 pb-24">
-            <div className="max-w-7xl mx-auto space-y-8">
+        <div className="min-h-screen bg-[#030712] p-6 pb-24 font-sans relative overflow-x-hidden">
+             {/* Background Effects */}
+            <div className="fixed inset-0 pointer-events-none z-0">
+                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-900/10 rounded-full blur-[120px]" />
+                 <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-150 contrast-150 mix-blend-overlay"></div>
+            </div>
+
+            <div className="max-w-7xl mx-auto space-y-8 relative z-10">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 pt-6">
                     <div>
-                        <div className="flex items-center gap-2 mb-2">
-                            <Crown className="text-indigo-600" size={32} />
-                            <h1 className="text-3xl font-black text-slate-900">City Manager Dashboard</h1>
+                        <div className="flex items-center gap-3 mb-2">
+                             <div className="p-2 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                                <Crown className="text-blue-500" size={24} />
+                             </div>
+                            <h1 className="text-3xl font-black text-white tracking-tight uppercase">Manager Console</h1>
                         </div>
-                        <p className="text-slate-500 font-medium">
-                            Overview of all departments and critical issues
+                        <p className="text-slate-500 font-mono text-xs uppercase tracking-wider">
+                            City-Wide Sector Oversight // Authorized Access Only
                         </p>
                     </div>
                     <button
                         onClick={fetchDashboardData}
                         disabled={refreshing}
-                        className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bg-[#0B1221] border border-blue-500/30 rounded-xl text-blue-400 hover:bg-blue-500/10 transition-colors disabled:opacity-50 text-xs font-bold uppercase tracking-wide shadow-lg"
                     >
-                        <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+                        <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
                         <span className="hidden sm:inline">Refresh Data</span>
                     </button>
                 </div>
 
                 {/* KPI Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <StatCard
-                        title="Total Issues"
+                        title="Total Logs"
                         value={stats.total}
                         icon={Activity}
-                        color="text-indigo-600"
-                        bg="bg-indigo-50"
-                        subtitle="Across all departments"
+                        color="text-blue-400"
+                        bg="bg-blue-500/10"
+                        subtitle="All Sectors"
                     />
                     <StatCard
-                        title="Critical Overdue"
+                        title="Critical Alerts"
                         value={totalOverdue}
                         icon={AlertTriangle}
-                        color="text-red-600"
-                        bg="bg-red-50"
-                        subtitle="Requiring immediate attention"
+                        color="text-red-400"
+                        bg="bg-red-500/10"
+                        subtitle="Immediate Action Req."
                     />
                     <StatCard
-                        title="Resolution Rate"
-                        value={`${stats.completionRate}%`}
+                        title="Efficiency"
+                        value={`${Math.round(stats.completionRate)}%`}
                         icon={CheckCircle}
-                        color="text-emerald-600"
-                        bg="bg-emerald-50"
-                        subtitle="Global efficiency"
+                        color="text-emerald-400"
+                        bg="bg-emerald-500/10"
+                        subtitle="Global Clearance Rate"
                     />
                     <StatCard
-                        title="Active Departments"
+                        title="Active Units"
                         value="6"
                         icon={Shield}
-                        color="text-blue-600"
-                        bg="bg-blue-50"
-                        subtitle="Operational"
+                        color="text-purple-400"
+                        bg="bg-purple-500/10"
+                        subtitle="Online Divisions"
                     />
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Critical/Overdue Issues */}
-                    <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                    <AlertCircle size={20} className="text-red-500" />
-                                    Critical Attention Required
+                    <div className="lg:col-span-2 space-y-8">
+                        <div className="bg-[#0B1221]/80 backdrop-blur-xl rounded-[2rem] p-8 shadow-xl border border-white/10 relative overflow-hidden">
+                             {/* Red Glow for Alert Section */}
+                             {totalOverdue > 0 && <div className="absolute top-0 right-0 w-64 h-64 bg-red-900/10 rounded-full blur-[80px] pointer-events-none"></div>}
+
+                            <div className="flex items-center justify-between mb-8 relative z-10">
+                                <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                    <AlertCircle size={16} className={totalOverdue > 0 ? "text-red-500 animate-pulse" : "text-slate-600"} />
+                                    Critical Anomalies
                                 </h3>
-                                <div className="text-sm font-bold text-slate-400">
-                                    {totalOverdue} Issues Overdue
+                                <div className={`text-[10px] font-bold px-3 py-1 rounded border uppercase tracking-wider ${totalOverdue > 0 ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
+                                    {totalOverdue} Active Alerts
                                 </div>
                             </div>
 
                             {totalOverdue === 0 ? (
-                                <div className="text-center py-12">
-                                    <CheckCircle size={48} className="text-emerald-500 mx-auto mb-4" />
-                                    <h4 className="font-bold text-slate-900 mb-2">All Systems Operational</h4>
-                                    <p className="text-slate-500 text-sm">No critical overdue issues detected.</p>
+                                <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-3xl bg-white/5">
+                                    <CheckCircle size={48} className="text-emerald-500 mx-auto mb-4 opacity-50" />
+                                    <h4 className="font-bold text-white mb-2 uppercase tracking-wide">Status Normal</h4>
+                                    <p className="text-slate-500 text-xs font-mono">No critical deviations detected.</p>
                                 </div>
                             ) : (
-                                <div className="space-y-3">
+                                <div className="space-y-3 relative z-10">
                                     {[...(stats.overdue?.pending || []), ...(stats.overdue?.inProgress || [])]
                                         .sort((a, b) => b.overdueBy - a.overdueBy)
                                         .map((issue) => (
-                                            <div key={issue._id} className="p-4 rounded-xl border border-red-100 bg-red-50/10 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                                            <div key={issue._id} className="p-5 rounded-2xl border border-red-500/20 bg-red-900/10 hover:bg-red-900/20 transition-all flex flex-col sm:flex-row gap-4 items-start sm:items-center group">
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-2 mb-2">
-                                                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${getSeverityColor(issue.severity || 'high')}`}>
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getSeverityColor(issue.severity || 'high')}`}>
                                                             {issue.severity?.toUpperCase() || 'HIGH'}
                                                         </span>
-                                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono bg-black/30 px-2 py-0.5 rounded border border-white/5">
                                                             {getDepartmentLabel(issue.category)}
                                                         </span>
                                                     </div>
-                                                    <h4 className="font-bold text-slate-900">{issue.title}</h4>
-                                                    <div className="flex items-center gap-2 text-xs text-red-600 font-medium mt-1">
+                                                    <h4 className="font-bold text-white group-hover:text-red-400 transition-colors">{issue.title}</h4>
+                                                    <div className="flex items-center gap-2 text-[10px] text-red-400 font-medium mt-1 font-mono uppercase">
                                                         <Clock size={12} />
-                                                        Overdue by {formatDuration(issue.overdueBy)}
+                                                        Exceeded Limit: {formatDuration(issue.overdueBy)}
                                                     </div>
                                                 </div>
                                                 <button
                                                     onClick={() => handleSendReminder(issue._id)}
                                                     disabled={sendingReminder === issue._id}
-                                                    className="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50 whitespace-nowrap"
+                                                    className="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold hover:bg-red-500 hover:text-white transition-all flex items-center gap-2 disabled:opacity-50 whitespace-nowrap uppercase tracking-wide shadow-[0_0_10px_rgba(239,68,68,0.1)] hover:shadow-[0_0_15px_rgba(239,68,68,0.4)]"
                                                 >
                                                     {sendingReminder === issue._id ? (
-                                                        <RefreshCw className="animate-spin" size={16} />
+                                                        <RefreshCw className="animate-spin" size={14} />
                                                     ) : (
-                                                        <Bell size={16} />
+                                                        <Bell size={14} />
                                                     )}
-                                                    Remind Dept
+                                                    Signal Priority
                                                 </button>
                                             </div>
                                         ))
@@ -344,34 +356,37 @@ const ManagerDashboard = () => {
                         </div>
 
                         {/* Department Breakdown */}
-                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
-                            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                <BarChart3 size={20} className="text-indigo-500" />
-                                Department Performance Overview
+                        <div className="bg-[#0B1221]/80 backdrop-blur-xl rounded-[2rem] p-8 shadow-xl border border-white/10">
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-2">
+                                <BarChart3 size={16} className="text-blue-500" />
+                                Sector Performance
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {Object.entries(stats.byDepartment || {}).map(([dept, deptStats]) => (
-                                    <div key={dept} className="p-4 rounded-xl border border-slate-100 hover:border-indigo-200 transition-colors bg-slate-50/50">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <span className="font-bold text-slate-800 text-sm">
+                                    <div key={dept} className="p-4 rounded-2xl border border-white/5 bg-[#0F172A] hover:border-blue-500/30 transition-all">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="font-bold text-white text-xs uppercase tracking-wider flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_5px_#3b82f6]"></div>
                                                 {getDepartmentLabel(dept)}
                                             </span>
                                             {deptStats.overdueCount > 0 && (
-                                                <span className="px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-xs font-bold px-2">
-                                                    {deptStats.overdueCount} 🔥
+                                                <span className="px-2 py-0.5 bg-red-500/10 border border-red-500/20 text-red-400 rounded text-[10px] font-bold uppercase tracking-wider">
+                                                    {deptStats.overdueCount} Critical
                                                 </span>
                                             )}
                                         </div>
                                         {/* Progress bar */}
-                                        <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden mb-2">
-                                            <div
-                                                className="bg-emerald-500 h-full rounded-full transition-all duration-1000"
-                                                style={{ width: `${deptStats.total > 0 ? ((deptStats.resolved + deptStats.closed) / deptStats.total) * 100 : 0}%` }}
+                                        <div className="w-full bg-black/40 rounded-full h-1.5 overflow-hidden mb-3 border border-white/5">
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                whileInView={{ width: `${deptStats.total > 0 ? ((deptStats.resolved + deptStats.closed) / deptStats.total) * 100 : 0}%` }}
+                                                className="bg-emerald-500 h-full rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)]"
+                                                transition={{ duration: 1 }}
                                             />
                                         </div>
-                                        <div className="flex justify-between text-xs text-slate-500">
-                                            <span>{deptStats.total} Total</span>
-                                            <span>{deptStats.resolved + deptStats.closed} Resolved</span>
+                                        <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                                            <span>TOTAL: {deptStats.total}</span>
+                                            <span className="text-emerald-500">RESOLVED: {deptStats.resolved + deptStats.closed}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -380,15 +395,15 @@ const ManagerDashboard = () => {
                     </div>
 
                     {/* Settings & Thresholds */}
-                    <div className="space-y-6">
-                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100">
-                            <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                <Settings size={20} className="text-slate-500" />
-                                Threshold Configuration
+                    <div className="space-y-8">
+                        <div className="bg-[#0B1221]/80 backdrop-blur-xl rounded-[2rem] p-8 shadow-xl border border-white/10">
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                                <Settings size={16} className="text-white" />
+                                System Configuration
                             </h3>
-                            <p className="text-slate-500 text-sm mb-4">Set operational limits for each department. Breaches will appear in the Critical Overdue list.</p>
+                            <p className="text-slate-500 text-xs font-mono mb-6 leading-relaxed">Adjust operational thresholds. Anomalies exceeding these parameters will trigger critical alerts.</p>
 
-                            <div className="space-y-2">
+                            <div className="space-y-3">
                                 {thresholds.map((threshold) => (
                                     <button
                                         key={threshold.department}
@@ -396,32 +411,44 @@ const ManagerDashboard = () => {
                                             setSelectedDepartment(threshold);
                                             setShowThresholdModal(true);
                                         }}
-                                        className="w-full p-4 rounded-xl border border-slate-100 hover:border-indigo-500 hover:bg-indigo-50 transition-all flex items-center justify-between group"
+                                        className="w-full p-4 rounded-xl border border-white/5 bg-[#0F172A] hover:bg-white/5 hover:border-blue-500/30 transition-all flex items-center justify-between group"
                                     >
                                         <div className="text-left">
-                                            <div className="font-bold text-slate-700 text-sm group-hover:text-indigo-700">
+                                            <div className="font-bold text-slate-300 text-xs uppercase tracking-wide group-hover:text-blue-400 transition-colors">
                                                 {getDepartmentLabel(threshold.department)}
                                             </div>
-                                            <div className="text-xs text-slate-400 mt-1">
+                                            <div className="text-[10px] text-slate-500 mt-1 font-mono group-hover:text-slate-400">
                                                 {formatDuration(threshold.maxPendingHours)} / {formatDuration(threshold.maxInProgressHours)}
                                             </div>
                                         </div>
-                                        <ChevronRight size={16} className="text-slate-300 group-hover:text-indigo-500" />
+                                        <ChevronRight size={14} className="text-slate-600 group-hover:text-blue-400 transition-colors" />
                                     </button>
                                 ))}
                             </div>
                         </div>
 
                         {/* Recent Activity Mini-Feed */}
-                        <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-100 opacity-60">
-                            <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">System Status</h3>
-                            <div className="flex items-center gap-2 text-sm text-slate-500">
-                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                All systems nominal
+                        <div className="bg-[#0B1221]/80 backdrop-blur-xl rounded-[2rem] p-8 shadow-xl border border-white/10 opacity-80">
+                            <h3 className="text-sm font-bold text-slate-400 mb-4 uppercase tracking-widest flex items-center gap-2">
+                                 <Terminal size={14} /> System Status
+                            </h3>
+                            <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wide mb-4">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_#10b981]" />
+                                Operational
                             </div>
-                            <div className="mt-4 text-xs text-slate-400">
-                                Automatic database backups enabled.<br />
-                                Last backup: 2 hours ago.
+                            <div className="text-[10px] text-slate-500 font-mono space-y-2 border-t border-white/5 pt-4">
+                                <div className="flex justify-between">
+                                    <span>DATABASE INTEGRITY</span>
+                                    <span className="text-blue-400">100%</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>ENCRYPTION LEVEL</span>
+                                    <span className="text-purple-400">AES-256</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>LAST LATENCY CHK</span>
+                                    <span className="text-slate-300">24ms</span>
+                                </div>
                             </div>
                         </div>
                     </div>

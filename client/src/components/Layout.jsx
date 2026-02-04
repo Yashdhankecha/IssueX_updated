@@ -6,7 +6,6 @@ import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import Footer from './Footer';
 import LocationPrompt from './LocationPrompt';
-
 import BottomNav from './BottomNav';
 
 const Layout = ({ children }) => {
@@ -24,12 +23,19 @@ const Layout = ({ children }) => {
   }
 
   return (
-    <div className="w-full relative overflow-x-hidden min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 pb-20 lg:pb-0">
+    <div className="w-full relative overflow-x-hidden min-h-screen bg-[#030712] pb-20 lg:pb-0">
+      {/* Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[150px]" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 brightness-150 contrast-150 mix-blend-overlay" />
+      </div>
+
       {/* Navbar */}
       <Navbar onMenuClick={toggleSidebar} />
       
       {/* Main Content */}
-      <div className="flex">
+      <div className="flex relative z-10">
         {/* Sidebar - Only show for non-admin users */}
         {!isAdmin && (
           <AnimatePresence>
@@ -54,7 +60,7 @@ const Layout = ({ children }) => {
       </div>
       
       {/* Footer */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block relative z-10">
         <Footer />
       </div>
 
@@ -65,7 +71,7 @@ const Layout = ({ children }) => {
       <AnimatePresence>
         {sidebarOpen && (
           <motion.div
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -77,4 +83,4 @@ const Layout = ({ children }) => {
   );
 };
 
-export default Layout; 
+export default Layout;

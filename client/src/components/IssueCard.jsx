@@ -61,63 +61,61 @@ const IssueCard = ({ issue }) => {
   return (
     <Link
       to={`/issue/${issue._id || issue.id}`}
-      className="block bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-all duration-200 active:scale-[0.99]"
+      className="block bg-[#0B1221] rounded-2xl border border-white/10 overflow-hidden hover:border-white/20 transition-all duration-200 active:scale-[0.99]"
     >
-      {/* Image Section */}
-      <div className="relative aspect-[16/10] sm:aspect-[16/9] bg-slate-100">
+      {/* Image */}
+      <div className="relative aspect-[16/10] sm:aspect-[16/9] bg-[#0F172A]">
         {issue.images?.[0] ? (
           <img src={issue.images[0]} alt="" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-300">
+          <div className="w-full h-full flex items-center justify-center text-slate-600">
             <AlertCircle size={32} />
           </div>
         )}
 
-        {/* Category Badge */}
-        <span className="absolute top-2 left-2 sm:top-3 sm:left-3 px-2 py-1 bg-black/60 backdrop-blur-sm text-white text-[10px] sm:text-xs font-medium rounded-lg">
+        {/* Category */}
+        <span className="absolute top-2 left-2 sm:top-3 sm:left-3 px-2.5 py-1 bg-black/60 backdrop-blur-sm text-white text-[10px] sm:text-xs font-medium rounded-lg border border-white/10">
           {categoryLabels[issue.category] || issue.category}
         </span>
 
-        {/* Status Badge */}
-        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-1.5 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-lg">
+        {/* Status */}
+        <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex items-center gap-1.5 px-2.5 py-1 bg-[#0B1221]/90 backdrop-blur-sm rounded-lg border border-white/10">
           <span className={`w-2 h-2 rounded-full ${statusColors[issue.status]}`}></span>
-          <span className="text-[10px] sm:text-xs font-medium text-slate-700">{statusLabels[issue.status]}</span>
+          <span className="text-[10px] sm:text-xs font-medium text-slate-300">{statusLabels[issue.status]}</span>
         </div>
       </div>
 
       {/* Content */}
       <div className="p-3 sm:p-4">
         {/* Title */}
-        <h3 className="font-semibold text-slate-900 text-sm sm:text-base line-clamp-2 mb-1.5 leading-snug">
+        <h3 className="font-semibold text-white text-sm sm:text-base line-clamp-2 mb-1.5 leading-snug">
           {issue.title}
         </h3>
 
         {/* Location */}
         <div className="flex items-start gap-1 mb-3">
-          <MapPin size={12} className="text-slate-400 mt-0.5 flex-shrink-0" />
-          <p className="text-xs text-slate-500 line-clamp-1">
+          <MapPin size={12} className="text-slate-500 mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-slate-400 line-clamp-1">
             {issue.location?.address || 'Location not available'}
           </p>
         </div>
 
-        {/* Vote Section */}
+        {/* Votes */}
         <div className="flex items-center gap-2" onClick={(e) => e.preventDefault()}>
           {/* Upvote */}
           <button
             className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium transition-all
               ${hasUpvoted
                 ? 'bg-emerald-500 text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-emerald-50 hover:text-emerald-600'
+                : 'bg-white/5 text-slate-400 hover:bg-emerald-500/20 hover:text-emerald-400 border border-white/5'
               }
-              ${!user ? 'opacity-50' : ''}
-              ${isVoting ? 'opacity-50' : ''}
+              ${!user || isVoting ? 'opacity-50' : ''}
             `}
             onClick={(e) => handleVote(e, 'upvote')}
             disabled={!user || isVoting}
           >
             <ArrowUp size={16} className={hasUpvoted ? 'stroke-[2.5]' : ''} />
-            <span className="hidden xs:inline">{hasUpvoted ? 'Upvoted' : 'Upvote'}</span>
-            <span className={`text-xs px-1.5 py-0.5 rounded ${hasUpvoted ? 'bg-white/20' : 'bg-slate-200/80'}`}>
+            <span className={`text-xs px-1.5 py-0.5 rounded ${hasUpvoted ? 'bg-white/20' : 'bg-white/5'}`}>
               {upvotesCount}
             </span>
           </button>
@@ -127,32 +125,30 @@ const IssueCard = ({ issue }) => {
             className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-medium transition-all
               ${hasDownvoted
                 ? 'bg-red-500 text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500'
+                : 'bg-white/5 text-slate-400 hover:bg-red-500/20 hover:text-red-400 border border-white/5'
               }
-              ${!user ? 'opacity-50' : ''}
-              ${isVoting ? 'opacity-50' : ''}
+              ${!user || isVoting ? 'opacity-50' : ''}
             `}
             onClick={(e) => handleVote(e, 'downvote')}
             disabled={!user || isVoting}
           >
             <ArrowDown size={16} className={hasDownvoted ? 'stroke-[2.5]' : ''} />
-            <span className="hidden xs:inline">{hasDownvoted ? 'Downvoted' : 'Downvote'}</span>
-            <span className={`text-xs px-1.5 py-0.5 rounded ${hasDownvoted ? 'bg-white/20' : 'bg-slate-200/80'}`}>
+            <span className={`text-xs px-1.5 py-0.5 rounded ${hasDownvoted ? 'bg-white/20' : 'bg-white/5'}`}>
               {downvotesCount}
             </span>
           </button>
 
           {/* Score */}
-          <div className={`px-3 py-2 rounded-xl text-sm font-bold min-w-[50px] text-center
-            ${voteCount > 0 ? 'bg-emerald-50 text-emerald-600' :
-              voteCount < 0 ? 'bg-red-50 text-red-500' : 'bg-slate-100 text-slate-500'}
-          `}>
+          <div className={`px-3 py-2 rounded-xl text-sm font-bold min-w-[50px] text-center border border-white/5
+            ${voteCount > 0 ? 'bg-emerald-500/20 text-emerald-400' :
+              voteCount < 0 ? 'bg-red-500/20 text-red-400' : 'bg-white/5 text-slate-400'
+            }`}>
             {voteCount > 0 ? '+' : ''}{voteCount}
           </div>
         </div>
 
         {/* Time */}
-        <p className="text-[10px] sm:text-xs text-slate-400 mt-2 text-right">
+        <p className="text-[10px] sm:text-xs text-slate-500 mt-2 text-right">
           {formatDistanceToNow(new Date(issue.createdAt), { addSuffix: true })}
         </p>
       </div>

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import 'leaflet.heat'; // Import leaflet.heat (ensure it's installed)
-import { ArrowLeft, Loader2, MapPin, Layers, Flame } from 'lucide-react';
+import 'leaflet.heat'; 
+import { ArrowLeft, Loader2, MapPin, Layers, Flame, Radar, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -27,10 +27,17 @@ const HeatmapLayer = ({ points }) => {
     if (!points || points.length === 0) return;
 
     // Points format: [lat, lng, intensity]
+    // Increased intensity for dark mode visibility
     const heat = L.heatLayer(points, {
-      radius: 25,
-      blur: 15,
+      radius: 30,
+      blur: 20,
       maxZoom: 17,
+      gradient: {
+          0.4: '#3b82f6', // blue
+          0.6: '#a855f7', // purple
+          0.8: '#ef4444', // red
+          1.0: '#f59e0b'  // amber/bright
+      }
     }).addTo(map);
 
     return () => {
@@ -62,7 +69,7 @@ const GovMapPage = () => {
             
             // Managers see all issues
             if (isManager) {
-                endpoint = '/api/issues?limit=1000&status=reported'; // Fetch reported issues mainly, or all
+                endpoint = '/api/issues?limit=1000&status=reported';
             }
 
             const res = await api.get(endpoint); 
@@ -83,7 +90,7 @@ const GovMapPage = () => {
             }
         } catch (error) {
             console.error(error);
-            toast.error('Failed to load map data');
+            toast.error('Satellite Uplink Failed');
         } finally {
             setLoading(false);
         }
@@ -91,9 +98,9 @@ const GovMapPage = () => {
 
     const getStatusColor = (status) => {
         switch(status) {
-            case 'reported': return '#f97316'; // orange
-            case 'in_progress': return '#3b82f6'; // blue
-            case 'resolved': return '#22c55e'; // green
+            case 'reported': return '#ef4444'; // Red for reported/critical
+            case 'in_progress': return '#3b82f6'; // Blue for active
+            case 'resolved': return '#10b981'; // Green for resolved
             default: return '#64748b';
         }
     };
@@ -102,17 +109,17 @@ const GovMapPage = () => {
         const color = getStatusColor(status);
         return L.divIcon({
             html: `
-              <div class="relative">
-                <div class="w-6 h-6 rounded-full border-2 border-white shadow-md flex items-center justify-center" style="background-color: ${color}">
-                    <div class="w-2 h-2 bg-white rounded-full"></div>
+              <div class="relative group">
+                <div class="w-4 h-4 rounded-full shadow-[0_0_15px_${color}] flex items-center justify-center animate-pulse" style="background-color: ${color}">
+                    <div class="w-1.5 h-1.5 bg-white rounded-full"></div>
                 </div>
-                <div class="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-3 bg-black/20 blur-[1px]"></div>
+                <div class="absolute -bottom-8 left-1/2 -translate-x-1/2 w-0.5 h-8 bg-gradient-to-t from-transparent to-${color} opacity-50"></div>
               </div>
             `,
             className: 'custom-map-marker',
-            iconSize: [24, 24],
-            iconAnchor: [12, 24],
-            popupAnchor: [0, -24]
+            iconSize: [16, 16],
+            iconAnchor: [8, 8],
+            popupAnchor: [0, -10]
         });
     };
 
@@ -125,47 +132,48 @@ const GovMapPage = () => {
     }).filter(p => p !== null);
 
     return (
-        <div className="relative w-full h-screen bg-slate-100 font-sans">
+        <div className="relative w-full h-screen bg-[#030712] font-sans overflow-hidden">
+             
              {/* Header */}
             <div className="absolute top-0 left-0 right-0 z-[400] p-4 pointer-events-none">
                 <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center sm:justify-between gap-4 pointer-events-auto">
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <button 
                             onClick={() => navigate(-1)} 
-                            className="p-3 bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/40 text-slate-700 hover:bg-white transition-all shrink-0"
+                            className="p-3 bg-black/60 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 text-white hover:bg-black/80 transition-all shrink-0 group"
                         >
-                            <ArrowLeft size={20} />
+                            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
                         </button>
-                        <div className="bg-white/90 backdrop-blur-md px-4 sm:px-6 py-3 rounded-2xl shadow-lg border border-white/40 flex-1 sm:flex-none">
-                             <h1 className="font-bold text-slate-800 flex items-center justify-center sm:justify-start gap-2 text-sm sm:text-base whitespace-nowrap">
-                                <MapPin className="text-blue-600 shrink-0" size={18} />
-                                {isManager ? 'City Overview' : 'Dept Heatmap'}
+                        <div className="bg-black/60 backdrop-blur-xl px-4 sm:px-6 py-3 rounded-2xl shadow-lg border border-white/20 flex-1 sm:flex-none">
+                             <h1 className="font-bold text-white flex items-center justify-center sm:justify-start gap-2 text-sm sm:text-base whitespace-nowrap uppercase tracking-wider">
+                                <Radar className="text-blue-500 shrink-0 animate-spin-slow" size={18} />
+                                {isManager ? 'City Surveillance' : 'Sector Heatmap'}
                              </h1>
                         </div>
                     </div>
 
                     {/* View Toggles */}
-                    <div className="flex bg-white/90 backdrop-blur-md rounded-2xl shadow-lg border border-white/40 p-1 w-full sm:w-auto">
+                    <div className="flex bg-black/60 backdrop-blur-xl rounded-2xl shadow-lg border border-white/20 p-1 w-full sm:w-auto">
                         <button
                             onClick={() => setViewMode('markers')}
-                            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${
                                 viewMode === 'markers' 
-                                ? 'bg-blue-600 text-white shadow-md' 
-                                : 'text-slate-600 hover:bg-slate-100'
+                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' 
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
                             }`}
                         >
-                            <MapPin size={16} />
+                            <MapPin size={14} />
                             Markers
                         </button>
                         <button
                             onClick={() => setViewMode('heatmap')}
-                            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                            className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-wide transition-all ${
                                 viewMode === 'heatmap' 
-                                ? 'bg-orange-600 text-white shadow-md' 
-                                : 'text-slate-600 hover:bg-slate-100'
+                                ? 'bg-orange-600 text-white shadow-lg shadow-orange-900/40' 
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
                             }`}
                         >
-                            <Flame size={16} />
+                            <Flame size={14} />
                             Heatmap
                         </button>
                     </div>
@@ -176,10 +184,12 @@ const GovMapPage = () => {
                 center={center} 
                 zoom={5} 
                 zoomControl={false} 
-                className="absolute inset-0 z-0"
+                className="absolute inset-0 z-0 bg-[#030712]"
             >
+                {/* Dark Matter Tiles */}
                 <TileLayer 
-                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                 />
                 <MapController center={center} />
 
@@ -199,17 +209,22 @@ const GovMapPage = () => {
                             position={[lat, lng]}
                             icon={createIcon(issue.status)}
                         >
-                            <Popup className="rounded-xl overflow-hidden">
-                                <div className="p-2 min-w-[200px]">
-                                    <img src={issue.images?.[0] || 'https://via.placeholder.com/150'} className="w-full h-32 object-cover rounded-lg mb-2 bg-slate-100" />
-                                    <h3 className="font-bold text-slate-900 line-clamp-1">{issue.title}</h3>
-                                    <p className="text-xs text-slate-500 mb-2 truncate">{issue.location.address}</p>
-                                    <span className={`text-[10px] font-bold px-2 py-1 rounded-full text-white uppercase ${
-                                        issue.status === 'reported' ? 'bg-orange-500' :
-                                        issue.status === 'in_progress' ? 'bg-blue-500' : 'bg-green-500'
-                                    }`}>
-                                        {issue.status.replace('_', ' ')}
-                                    </span>
+                            <Popup className="tech-popup">
+                                <div className="p-0 min-w-[220px] bg-[#0B1221] text-white rounded-xl overflow-hidden border border-white/10">
+                                    <div className="relative h-32 w-full">
+                                         <img src={issue.images?.[0] || 'https://via.placeholder.com/150'} className="w-full h-full object-cover opacity-80" />
+                                         <div className="absolute inset-0 bg-gradient-to-t from-[#0B1221] to-transparent"></div>
+                                         <span className={`absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider ${
+                                            issue.status === 'reported' ? 'bg-red-500/20 text-red-500 border-red-500/30' :
+                                            issue.status === 'in_progress' ? 'bg-blue-500/20 text-blue-500 border-blue-500/30' : 'bg-green-500/20 text-green-500 border-green-500/30'
+                                         }`}>
+                                            {issue.status.replace('_', ' ')}
+                                         </span>
+                                    </div>
+                                    <div className="p-3">
+                                        <h3 className="font-bold text-white text-sm line-clamp-1 mb-1">{issue.title}</h3>
+                                        <p className="text-[10px] text-slate-400 mb-2 truncate font-mono">{issue.location.address}</p>
+                                    </div>
                                 </div>
                             </Popup>
                         </Marker>
@@ -218,10 +233,14 @@ const GovMapPage = () => {
             </MapContainer>
 
             {loading && (
-                 <div className="absolute inset-0 z-[500] flex items-center justify-center bg-white/50 backdrop-blur-sm">
-                    <Loader2 className="animate-spin text-blue-600 w-10 h-10" />
+                 <div className="absolute inset-0 z-[500] flex flex-col items-center justify-center bg-[#030712]/80 backdrop-blur-md">
+                    <div className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mb-4 shadow-[0_0_20px_rgba(59,130,246,0.3)]"></div>
+                    <p className="text-blue-400 font-mono text-xs animate-pulse tracking-widest">ACQUIRING TARGETS...</p>
                  </div>
             )}
+            
+            {/* Grid Overlay for tech effect */}
+            <div className="absolute inset-0 pointer-events-none z-[1] bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px]"></div>
         </div>
     );
 };

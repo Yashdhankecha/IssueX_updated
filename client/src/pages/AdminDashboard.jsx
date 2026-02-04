@@ -25,18 +25,22 @@ import {
   ChevronRight,
   TrendingUp,
   Activity,
-  Bell
+  Bell,
+  Cpu,
+  Terminal,
+  Database
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+import { useLocation } from 'react-router-dom';
 
 const StatusBadge = ({ status }) => {
   const styles = {
-    reported: 'bg-red-500/10 text-red-600 border-red-200/50',
-    in_progress: 'bg-amber-500/10 text-amber-600 border-amber-200/50',
-    resolved: 'bg-emerald-500/10 text-emerald-600 border-emerald-200/50',
-    closed: 'bg-slate-500/10 text-slate-600 border-slate-200/50'
+    reported: 'bg-red-500/10 text-red-500 border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.2)]',
+    in_progress: 'bg-blue-500/10 text-blue-500 border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.2)]',
+    resolved: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)]',
+    closed: 'bg-slate-500/10 text-slate-400 border-slate-500/20'
   };
 
   const icons = {
@@ -49,9 +53,9 @@ const StatusBadge = ({ status }) => {
   const Icon = icons[status] || Shield;
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border backdrop-blur-sm ${styles[status] || styles.reported}`}>
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border backdrop-blur-sm uppercase tracking-wider ${styles[status] || styles.reported}`}>
       <Icon size={12} strokeWidth={2.5} />
-      {status.replace('_', ' ').toUpperCase()}
+      {status.replace('_', ' ')}
     </span>
   );
 };
@@ -59,30 +63,28 @@ const StatusBadge = ({ status }) => {
 const StatCard = ({ title, value, icon: Icon, color, trend }) => (
   <motion.div
     whileHover={{ y: -4 }}
-    className="relative overflow-hidden bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-xl shadow-indigo-100/20 group"
+    className="relative overflow-hidden bg-[#0B1221]/80 backdrop-blur-xl p-6 rounded-3xl border border-white/10 shadow-xl group"
   >
-    <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-10 transition-transform group-hover:scale-110 ${color}`} />
+    <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-5 transition-transform group-hover:scale-110 ${color.replace('text-', 'bg-')}`} />
 
     <div className="flex items-start justify-between mb-4">
-      <div className={`p-3 rounded-2xl ${color.replace('bg-', 'bg-').replace('500', '100')} ${color.replace('bg-', 'text-').replace('500', '600')}`}>
+      <div className={`p-3 rounded-2xl bg-white/5 border border-white/5 ${color}`}>
         <Icon size={24} />
       </div>
       {trend && (
-        <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-          <TrendingUp size={12} />
+        <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-full uppercase tracking-wide">
+          <TrendingUp size={10} />
           {trend}
         </div>
       )}
     </div>
 
     <div>
-      <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">{title}</div>
-      <div className="text-3xl font-black text-slate-900">{value}</div>
+      <div className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mb-1">{title}</div>
+      <div className="text-3xl font-black text-white tracking-tight">{value}</div>
     </div>
   </motion.div>
 );
-
-import { useLocation } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -142,9 +144,9 @@ const AdminDashboard = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      toast.success('Report generated successfully');
+      toast.success('Data Decrypted & Downloaded');
     } catch (error) {
-      toast.error('Failed to generate report');
+      toast.error('Extraction Failed');
       console.error(error);
     } finally {
       setIsReportGenerating(false);
@@ -231,52 +233,41 @@ const AdminDashboard = () => {
   }, [activeTab, fetchUsers]);
 
   const updateIssueStatus = async (issueId, newStatus) => {
-    if (!window.confirm(`Change status to ${newStatus}?`)) return;
+    if (!window.confirm(`Initialize protocol: ${newStatus}?`)) return;
     try {
       setUpdatingStatus(issueId);
       await api.patch(`/api/admin/issues/${issueId}/status`, { status: newStatus });
-      toast.success('Status updated');
+      toast.success('Status Update Confirmed');
       fetchIssues();
       fetchStats();
     } catch (error) {
-      toast.error('Failed to update');
+      toast.error('Update Failed');
     } finally {
       setUpdatingStatus(null);
     }
   };
 
   const deleteIssue = async (issueId) => {
-    if (!window.confirm('Delete this issue permanently?')) return;
+    if (!window.confirm('WARNING: Permanent deletion. Confirm?')) return;
     try {
       await api.delete(`/api/admin/issues/${issueId}`);
-      toast.success('Deleted');
+      toast.success('Record Expunged');
       fetchIssues();
       fetchStats();
     } catch (error) {
-      toast.error('Failed to delete');
-    }
-  };
-
-  const handleRemindDept = async (issueId) => {
-    try {
-      const res = await api.post(`/api/admin/issues/${issueId}/remind`);
-      if (res.data.success) {
-        toast.success(res.data.message);
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to send reminder');
+      toast.error('Deletion Failed');
     }
   };
 
   const deleteUser = async (userId) => {
-    if (!window.confirm('Delete user? This cannot be undone.')) return;
+    if (!window.confirm('Revoke user access permanently?')) return;
     try {
       await api.delete(`/api/admin/users/${userId}`);
-      toast.success('User deleted');
+      toast.success('Access Revoked');
       fetchUsers();
       fetchStats();
     } catch (e) {
-      toast.error('Failed to delete user');
+      toast.error('Failed to revoke access');
     }
   };
 
@@ -290,12 +281,12 @@ const AdminDashboard = () => {
         isActive: selectedUser.isActive
       };
       await api.patch(`/api/admin/users/${selectedUser._id}`, updates);
-      toast.success('User updated successfully');
+      toast.success('Credentials Updated');
       setShowUserModal(false);
       fetchUsers();
 
     } catch (error) {
-      toast.error('Failed to update user');
+      toast.error('Update Failed');
     }
   };
 
@@ -309,46 +300,48 @@ const AdminDashboard = () => {
 
   if (user?.role !== 'admin') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
-        <Shield size={64} className="text-slate-300 mb-4" />
-        <h2 className="text-xl font-bold text-slate-900">Access Denied</h2>
-        <p className="text-slate-500 mt-2">You need admin privileges to view this area.</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#030712] text-center p-6">
+        <Shield size={64} className="text-red-500 mb-4 animate-pulse" />
+        <h2 className="text-xl font-bold text-white uppercase tracking-widest">Access Denied</h2>
+        <p className="text-slate-500 mt-2 font-mono">Insufficient Clearance Level.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[#030712] text-white font-sans relative overflow-x-hidden">
       {/* Decorative Background */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[100px]" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[100px]" />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-900/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-900/10 rounded-full blur-[100px]" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-150 contrast-150 mix-blend-overlay"></div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 pb-20">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 pb-20 pt-8">
 
         {/* Hero Section */}
-        <div className="pt-8 pb-6 space-y-4">
+        <div className="pb-8 space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-                Admin Dashboard
+              <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
+                 <Terminal className="text-blue-500" />
+                 ADMIN CONSOLE
               </h1>
-              <p className="text-slate-500 font-medium">
-                Welcome back, {user?.name?.split(' ')[0] || 'Admin'}
+              <p className="text-slate-500 font-mono text-xs uppercase tracking-widest">
+                SYSTEM OPERATIONAL // WELCOME, {user?.name?.split(' ')[0] || 'ADMIN'}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={() => setShowReportModal(true)}
-                className="px-4 py-3 bg-white hover:bg-slate-50 text-slate-600 hover:text-indigo-600 rounded-2xl shadow-sm border border-slate-100 transition-all active:scale-95 font-bold text-sm flex items-center gap-2"
+                className="px-4 py-3 bg-[#0B1221]/80 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl shadow-lg border border-white/10 transition-all active:scale-95 font-bold text-xs uppercase tracking-wide flex items-center gap-2 backdrop-blur-md"
               >
-                <Download size={18} />
-                <span className="hidden sm:inline">Reports</span>
+                <Download size={16} />
+                <span className="hidden sm:inline">Export Data</span>
               </button>
               <button
                 onClick={() => fetchStats()}
-                className="p-3 bg-white hover:bg-slate-50 text-slate-400 hover:text-indigo-600 rounded-2xl shadow-sm border border-slate-100 transition-all active:scale-95"
+                className="p-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-900/20 border border-blue-400/20 transition-all active:scale-95"
               >
                 <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
               </button>
@@ -361,50 +354,54 @@ const AdminDashboard = () => {
 
           {/* OVERVIEW TAB */}
           {activeTab === 'overview' && stats && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <StatCard
-                  title="Total Issues"
+                  title="Total Anomalies"
                   value={stats.issues?.total || 0}
                   icon={AlertCircle}
-                  color="bg-indigo-500"
-                  trend="+12% this week"
+                  color="text-blue-400"
+                  trend="+12%"
                 />
                 <StatCard
-                  title="Active Users"
+                  title="Active Agents"
                   value={stats.users?.active || 0}
                   icon={Users}
-                  color="bg-violet-500"
-                  trend="+5 new today"
+                  color="text-purple-400"
+                  trend="+5"
                 />
                 <StatCard
-                  title="Resolution Rate"
+                  title="Success Rate"
                   value={`${Math.round(((stats.issues?.resolved || 0) / (stats.issues?.total || 1)) * 100)}%`}
                   icon={Activity}
-                  color="bg-emerald-500"
+                  color="text-emerald-400"
                 />
               </div>
 
               {/* Status Breakdown */}
-              <div className="bg-white/60 backdrop-blur-xl p-6 rounded-3xl border border-white/50 shadow-xl shadow-indigo-100/10">
-                <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                  <div className="w-1 h-6 bg-slate-900 rounded-full" />
-                  Issue Status Breakdown
+              <div className="bg-[#0B1221]/80 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-xl relative overflow-hidden">
+                 {/* scanline */}
+                 <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent"></div>
+
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+                  <Database size={14}/>
+                  Network Status Matrix
                 </h3>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   {[
-                    { label: 'Pending', count: stats.issues?.reported, color: 'text-amber-600', bg: 'bg-amber-50' },
-                    { label: 'In Progress', count: stats.issues?.inProgress, color: 'text-blue-600', bg: 'bg-blue-50' },
-                    { label: 'Resolved', count: stats.issues?.resolved, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                    { label: 'Closed', count: stats.issues?.closed, color: 'text-slate-600', bg: 'bg-slate-100' },
+                    { label: 'Pending', count: stats.issues?.reported, color: 'text-red-400', bg: 'bg-red-500/10' },
+                    { label: 'In Progress', count: stats.issues?.inProgress, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                    { label: 'Resolved', count: stats.issues?.resolved, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                    { label: 'Closed', count: stats.issues?.closed, color: 'text-slate-400', bg: 'bg-slate-500/10' },
                   ].map((item, i) => (
-                    <div key={i} className={`p-4 rounded-2xl ${item.bg} border-2 border-transparent hover:border-white/50 transition-all`}>
-                      <div className={`text-xs font-bold uppercase tracking-wider mb-2 opacity-60 ${item.color.replace('text-', 'text-black/50')}`}>
+                    <div key={i} className={`p-6 rounded-2xl ${item.bg} border border-white/5 relative overflow-hidden group`}>
+                       <div className={`absolute top-0 right-0 p-4 opacity-10 font-black text-4xl ${item.color.replace('text-', 'text-')}`}>#</div>
+                      <div className={`text-[10px] font-bold uppercase tracking-widest mb-2 opacity-70 ${item.color}`}>
                         {item.label}
                       </div>
-                      <div className={`text-2xl font-black ${item.color}`}>
+                      <div className={`text-3xl font-black text-white`}>
                         {item.count || 0}
                       </div>
                     </div>
@@ -418,12 +415,12 @@ const AdminDashboard = () => {
           {activeTab === 'issues' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* Search Toolbar */}
-              <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-2 sticky top-[10px] z-10 backdrop-blur-md bg-white/90">
+              <div className="bg-[#0B1221]/80 p-3 rounded-2xl border border-white/10 shadow-xl flex flex-col sm:flex-row gap-3 sticky top-[10px] z-30 backdrop-blur-md">
                 <div className="flex-1 relative group">
-                  <Search className="absolute left-3 top-3 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={20} />
+                  <Search className="absolute left-3 top-3 text-slate-500 group-focus-within:text-blue-400 transition-colors" size={20} />
                   <input
-                    placeholder="Search issues..."
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-100 focus:bg-white transition-all"
+                    placeholder="Initialize search sequence..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-[#0F172A] rounded-xl text-sm font-medium text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all border border-white/5"
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                   />
@@ -434,14 +431,14 @@ const AdminDashboard = () => {
                   <div className="relative z-30">
                     <button
                       onClick={() => setIsFilterOpen(!isFilterOpen)}
-                      className="flex items-center justify-between gap-3 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm min-w-[160px] flex-1 sm:flex-none"
+                      className="flex items-center justify-between gap-3 px-4 py-2.5 bg-[#0F172A] border border-white/5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:border-white/20 transition-all shadow-sm min-w-[160px] flex-1 sm:flex-none uppercase tracking-wide"
                     >
                       <div className="flex items-center gap-2">
                         <Filter size={16} />
                         <span>
                           {filter === 'all' ? 'Status: All' :
                             filter === 'reported' ? 'Pending' :
-                              filter === 'in_progress' ? 'In Progress' :
+                              filter === 'in_progress' ? 'Active' :
                                 filter.charAt(0).toUpperCase() + filter.slice(1).replace('_', ' ')}
                         </span>
                       </div>
@@ -462,26 +459,24 @@ const AdminDashboard = () => {
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: -10, scale: 0.95 }}
                             transition={{ duration: 0.2 }}
-                            className="absolute left-0 origin-top-left top-full mt-2 w-56 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-xl z-20 overflow-hidden p-1.5"
+                            className="absolute left-0 top-full mt-2 w-56 bg-[#0B1221] border border-white/10 rounded-xl shadow-2xl z-20 overflow-hidden p-1.5"
                           >
                             {[
-                              { value: 'all', label: 'All Status', color: 'bg-slate-100' },
-                              { value: 'reported', label: 'Pending', color: 'bg-red-50 text-red-600' },
-                              { value: 'in_progress', label: 'In Progress', color: 'bg-blue-50 text-blue-600' },
-                              { value: 'resolved', label: 'Resolved', color: 'bg-emerald-50 text-emerald-600' },
-                              { value: 'closed', label: 'Closed', color: 'bg-slate-50 text-slate-600' }
+                              { value: 'all', label: 'All Status', color: 'bg-slate-700' },
+                              { value: 'reported', label: 'Pending', color: 'text-red-400 bg-red-500/20' },
+                              { value: 'in_progress', label: 'Active', color: 'text-blue-400 bg-blue-500/20' },
+                              { value: 'resolved', label: 'Resolved', color: 'text-emerald-400 bg-emerald-500/20' },
                             ].map((opt) => (
                               <button
                                 key={opt.value}
                                 onClick={() => { setFilter(opt.value); setIsFilterOpen(false); }}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${filter === opt.value
-                                  ? 'bg-slate-900 text-white shadow-md'
-                                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${filter === opt.value
+                                  ? 'bg-white/10 text-white'
+                                  : 'text-slate-500 hover:bg-white/5 hover:text-white'
                                   }`}
                               >
-                                <div className={`w-2 h-2 rounded-full ${filter === opt.value ? 'bg-white' : opt.color.split(' ')[0].replace('bg-', 'bg-').replace('50', '400')}`} />
+                                <div className={`w-2 h-2 rounded-full ${filter === opt.value ? 'bg-white' : 'bg-slate-600'}`} />
                                 {opt.label}
-                                {filter === opt.value && <CheckCircle size={14} className="ml-auto" />}
                               </button>
                             ))}
                           </motion.div>
@@ -494,13 +489,12 @@ const AdminDashboard = () => {
                   <div className="relative z-20">
                     <button
                       onClick={() => setIsCategoryOpen(!isCategoryOpen)}
-                      className="flex items-center justify-between gap-3 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm min-w-[160px] flex-1 sm:flex-none"
+                      className="flex items-center justify-between gap-3 px-4 py-2.5 bg-[#0F172A] border border-white/5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:border-white/20 transition-all shadow-sm min-w-[160px] flex-1 sm:flex-none uppercase tracking-wide"
                     >
                       <div className="flex items-center gap-2">
                         <TrendingUp size={16} />
                         <span>
-                          {categoryFilter === 'all' ? 'Category: All' :
-                            categoryFilter.charAt(0).toUpperCase() + categoryFilter.slice(1)}
+                           {categoryFilter === 'all' ? 'All Types' : categoryFilter}
                         </span>
                       </div>
                       <motion.div
@@ -516,34 +510,24 @@ const AdminDashboard = () => {
                         <>
                           <div className="fixed inset-0 z-10" onClick={() => setIsCategoryOpen(false)} />
                           <motion.div
-                            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                            transition={{ duration: 0.2 }}
-                            className="absolute right-0 origin-top-right top-full mt-2 w-56 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-xl z-20 overflow-hidden p-1.5"
+                             initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                             animate={{ opacity: 1, y: 0, scale: 1 }}
+                             exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                             transition={{ duration: 0.2 }}
+                             className="absolute right-0 top-full mt-2 w-56 bg-[#0B1221] border border-white/10 rounded-xl shadow-2xl z-20 overflow-hidden p-1.5"
                           >
-                            {[
-                              { value: 'all', label: 'All Categories', color: 'bg-slate-100' },
-                              { value: 'roads', label: 'Roads', color: 'bg-orange-50 text-orange-600' },
-                              { value: 'lighting', label: 'Lights', color: 'bg-yellow-50 text-yellow-600' },
-                              { value: 'water', label: 'Water', color: 'bg-blue-50 text-blue-600' },
-                              { value: 'cleanliness', label: 'Garbage', color: 'bg-purple-50 text-purple-600' },
-                              { value: 'obstructions', label: 'Obstruction', color: 'bg-green-50 text-green-600' },
-                              { value: 'safety', label: 'Safety', color: 'bg-red-50 text-red-600' }
-                            ].map((opt) => (
-                              <button
-                                key={opt.value}
-                                onClick={() => { setCategoryFilter(opt.value); setIsCategoryOpen(false); }}
-                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all ${categoryFilter === opt.value
-                                  ? 'bg-slate-900 text-white shadow-md'
-                                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-                                  }`}
-                              >
-                                <div className={`w-2 h-2 rounded-full ${categoryFilter === opt.value ? 'bg-white' : opt.color.split(' ')[0].replace('bg-', 'bg-').replace('50', '400')}`} />
-                                {opt.label}
-                                {categoryFilter === opt.value && <CheckCircle size={14} className="ml-auto" />}
-                              </button>
-                            ))}
+                             {['all', 'roads', 'lighting', 'water', 'cleanliness', 'obstructions', 'safety'].map((opt) => (
+                                <button
+                                   key={opt}
+                                   onClick={() => { setCategoryFilter(opt); setIsCategoryOpen(false); }}
+                                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all ${categoryFilter === opt
+                                      ? 'bg-white/10 text-white'
+                                      : 'text-slate-500 hover:bg-white/5 hover:text-white'
+                                      }`}
+                                >
+                                   {opt}
+                                </button>
+                             ))}
                           </motion.div>
                         </>
                       )}
@@ -553,10 +537,10 @@ const AdminDashboard = () => {
               </div>
 
               {/* Issues Grid */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {loading ? (
                   [1, 2, 3, 4].map(i => (
-                    <div key={i} className="h-48 bg-white/50 rounded-3xl animate-pulse" />
+                    <div key={i} className="h-64 bg-[#0B1221] rounded-3xl animate-pulse border border-white/5" />
                   ))
                 ) : issues.map((issue, index) => (
                   <motion.div
@@ -566,65 +550,65 @@ const AdminDashboard = () => {
                     transition={{ duration: 0.2, delay: index * 0.05 }}
                     key={issue._id}
                     onClick={() => { setSelectedIssue(issue); setShowIssueModal(true); }}
-                    className="group bg-white/70 backdrop-blur-xl rounded-3xl border border-white/60 shadow-sm hover:shadow-xl hover:shadow-indigo-100/40 hover:-translate-y-1 transition-all flex flex-col relative overflow-hidden cursor-pointer"
+                    className="group bg-[#0B1221]/80 backdrop-blur-xl rounded-3xl border border-white/10 shadow-lg hover:shadow-2xl hover:border-white/20 hover:-translate-y-1 transition-all flex flex-col relative overflow-hidden cursor-pointer"
                   >
                     {/* Status Stripe */}
                     <div className={`absolute top-0 left-0 w-full h-1 z-10 ${issue.status === 'resolved' ? 'bg-emerald-500' :
-                      issue.status === 'in_progress' ? 'bg-blue-500' : 'bg-amber-500'
+                      issue.status === 'in_progress' ? 'bg-blue-500' : 'bg-red-500'
                       }`} />
 
                     {/* Delete Action - Floating Top Right */}
                     <button
                       onClick={(e) => { e.stopPropagation(); deleteIssue(issue._id); }}
-                      className="absolute top-3 right-3 z-20 p-2 bg-white text-red-500 rounded-full shadow-md hover:bg-red-50 transition-all border border-red-100"
-                      title="Delete Issue"
+                      className="absolute top-3 right-3 z-20 p-2 bg-black/50 backdrop-blur text-red-400 rounded-full shadow-md hover:bg-red-500 hover:text-white transition-all border border-white/10"
+                      title="Delete Record"
                     >
                       <Trash2 size={16} />
                     </button>
 
                     {/* Image Thumbnail */}
-                    {issue.images && issue.images.length > 0 && (
+                    {issue.images && issue.images.length > 0 ? (
                       <div className="h-48 w-full overflow-hidden relative">
                         <img
                           src={issue.images[0]}
                           alt="Issue"
-                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 opacity-80 group-hover:opacity-100"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-60" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#0B1221] to-transparent opacity-90" />
                       </div>
+                    ) : (
+                       <div className="h-48 w-full bg-[#0F172A] flex items-center justify-center text-slate-700">
+                          <AlertCircle size={32} />
+                       </div>
                     )}
 
-                    <div className="p-5 flex flex-col gap-4 flex-1">
-                      <StatusBadge status={issue.status} />
+                    <div className="p-6 flex flex-col gap-4 flex-1 -mt-12 relative z-10">
+                      <div>
+                         <StatusBadge status={issue.status} />
+                      </div>
 
                       <div className="space-y-2">
-                        <h3 className="font-bold text-slate-900 leading-snug text-lg line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                        <h3 className="font-bold text-white leading-tight text-lg line-clamp-2 group-hover:text-blue-400 transition-colors">
                           {issue.title}
                         </h3>
-                        <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed">
+                        <p className="text-sm text-slate-400 line-clamp-2 leading-relaxed font-light">
                           {issue.description}
                         </p>
                       </div>
 
-                      <div className="mt-auto pt-4 border-t border-slate-100/50 flex items-center justify-between">
+                      <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 ring-2 ring-white">
+                          <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-[10px] font-bold text-slate-300 border border-white/10">
                             {issue.anonymous ? '?' : (issue.reportedBy?.name?.[0] || 'U')}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase">Reported By</span>
-                            {issue.anonymous ? (
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] font-bold text-slate-500 w-fit">
-                                ANONYMOUS
-                              </span>
-                            ) : (
-                              <span className="text-xs font-bold text-slate-700 truncate max-w-[150px]">
-                                {issue.reportedBy?.name || 'Unknown'}
-                              </span>
-                            )}
+                            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Operative</span>
+                            <span className="text-xs font-bold text-white truncate max-w-[100px]">
+                                {issue.anonymous ? 'ANONYMOUS' : (issue.reportedBy?.name || 'Unknown')}
+                            </span>
                           </div>
                         </div>
-                        <button className="p-2 bg-slate-50 rounded-full text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors">
+                        <button className="p-2 bg-white/5 rounded-full text-slate-400 hover:bg-blue-600 hover:text-white transition-colors">
                           <ChevronRight size={16} />
                         </button>
                       </div>
@@ -635,19 +619,19 @@ const AdminDashboard = () => {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-center py-4 gap-2">
+                <div className="flex items-center justify-center py-6 gap-2">
                   <button
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage(p => p - 1)}
-                    className="px-4 py-2 bg-white rounded-xl text-sm font-bold text-slate-500 disabled:opacity-50 hover:bg-slate-50 shadow-sm"
+                    className="px-4 py-2 bg-[#0B1221] border border-white/10 rounded-xl text-xs font-bold text-slate-400 disabled:opacity-50 hover:bg-white/5 hover:text-white uppercase tracking-wide"
                   >
                     Prev
                   </button>
-                  <span className="text-sm font-bold text-slate-400">Page {currentPage} of {totalPages}</span>
+                  <span className="text-xs font-bold text-slate-500 font-mono">PAGE {currentPage} / {totalPages}</span>
                   <button
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage(p => p + 1)}
-                    className="px-4 py-2 bg-white rounded-xl text-sm font-bold text-slate-500 disabled:opacity-50 hover:bg-slate-50 shadow-sm"
+                    className="px-4 py-2 bg-[#0B1221] border border-white/10 rounded-xl text-xs font-bold text-slate-400 disabled:opacity-50 hover:bg-white/5 hover:text-white uppercase tracking-wide"
                   >
                     Next
                   </button>
@@ -660,25 +644,25 @@ const AdminDashboard = () => {
           {activeTab === 'users' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
               {/* User Toolbar */}
-              <div className="bg-white/80 backdrop-blur-xl p-4 rounded-3xl border border-white/50 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+              <div className="bg-[#0B1221]/80 backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-lg flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div className="flex-1 w-full flex gap-3">
                   <div className="relative flex-1">
-                    <Search className="absolute left-3 top-3 text-slate-400" size={18} />
+                    <Search className="absolute left-3 top-3 text-slate-500" size={18} />
                     <input
-                      placeholder="Find users..."
-                      className="w-full pl-10 pr-4 py-2.5 bg-slate-50 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                      placeholder="Search personnel database..."
+                      className="w-full pl-10 pr-4 py-2.5 bg-[#0F172A] rounded-xl text-sm font-medium text-white placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-blue-500/50 border border-white/5"
                       value={userSearch}
                       onChange={e => setUserSearch(e.target.value)}
                     />
                   </div>
                   <select
-                    className="bg-slate-50 px-4 rounded-xl text-sm font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+                    className="bg-[#0F172A] px-4 rounded-xl text-xs font-bold text-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500/50 border border-white/5 uppercase tracking-wide"
                     value={userFilter}
                     onChange={e => setUserFilter(e.target.value)}
                   >
-                    <option value="all">All Roles</option>
-                    <option value="admin">Admins</option>
-                    <option value="user">Users</option>
+                    <option value="all">All Ranks</option>
+                    <option value="admin">Command</option>
+                    <option value="user">Operatives</option>
                   </select>
                 </div>
               </div>
@@ -691,63 +675,63 @@ const AdminDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                     key={u._id}
-                    className="group bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="group bg-[#0B1221] p-4 rounded-2xl border border-white/5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-white/20 transition-all"
                   >
                     <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-white shadow-lg shrink-0 ${u.role === 'admin' ? 'bg-gradient-to-br from-violet-500 to-fuchsia-600' : 'bg-gradient-to-br from-slate-700 to-slate-900'
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white shadow-lg shrink-0 border border-white/10 ${u.role === 'admin' ? 'bg-purple-900/20 text-purple-400' : 'bg-slate-800/50 text-slate-400'
                         }`}>
                         {u.role === 'admin' ? <Crown size={20} /> : <User size={20} />}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-bold text-slate-900 text-lg truncate">{u.name}</h3>
+                          <h3 className="font-bold text-white text-base truncate group-hover:text-blue-400 transition-colors">{u.name}</h3>
                           {u.role === 'admin' && (
-                            <span className="px-2 py-0.5 bg-violet-100 text-violet-700 text-[10px] font-black uppercase tracking-wider rounded-md">Admin</span>
+                            <span className="px-2 py-0.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[10px] font-black uppercase tracking-wider rounded">Admin</span>
                           )}
                         </div>
-                        <div className="flex items-center gap-2 text-xs font-medium text-slate-500 mt-0.5 flex-wrap">
+                        <div className="flex items-center gap-2 text-[10px] font-medium text-slate-500 mt-1 flex-wrap font-mono uppercase">
                           <span className="truncate max-w-[150px] sm:max-w-none">{u.email}</span>
-                          <span className="hidden sm:inline w-1 h-1 bg-slate-300 rounded-full" />
-                          <span className="hidden sm:inline">Joined {formatDate(u.createdAt)}</span>
+                          <span className="hidden sm:inline w-1 h-1 bg-slate-700 rounded-full" />
+                          <span className="hidden sm:inline">ID: {u._id.slice(-6)}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-50 mt-2 sm:mt-0">
+                    <div className="flex items-center gap-2 justify-end pt-3 sm:pt-0 border-t border-white/5 sm:border-0 mt-2 sm:mt-0">
                       <button
                         onClick={() => { setSelectedUser(u); setShowUserModal(true); }}
-                        className="p-2 text-slate-400 hover:text-violet-600 hover:bg-violet-50 rounded-xl transition-colors bg-slate-50 sm:bg-transparent"
-                        title="Edit User"
+                        className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                        title="Modify Credentials"
                       >
-                        <RefreshCw size={18} />
+                        <RefreshCw size={16} />
                       </button>
                       <button
                         onClick={() => deleteUser(u._id)}
-                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors bg-slate-50 sm:bg-transparent"
-                        title="Delete User"
+                        className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Revoke Access"
                       >
-                        <Trash2 size={18} />
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </motion.div>
                 ))}
               </div>
 
-              {/* User Pagination */}
-              {userTotalPages > 1 && (
-                <div className="flex items-center justify-center py-4 gap-2">
+               {/* User Pagination */}
+               {userTotalPages > 1 && (
+                <div className="flex items-center justify-center py-6 gap-2">
                   <button
                     disabled={userCurrentPage === 1}
                     onClick={() => setUserCurrentPage(p => p - 1)}
-                    className="px-4 py-2 bg-white rounded-xl text-sm font-bold text-slate-500 disabled:opacity-50 hover:bg-slate-50 shadow-sm"
+                    className="px-4 py-2 bg-[#0B1221] border border-white/10 rounded-xl text-xs font-bold text-slate-400 disabled:opacity-50 hover:bg-white/5 hover:text-white uppercase tracking-wide"
                   >
                     Prev
                   </button>
-                  <span className="text-sm font-bold text-slate-400">Page {userCurrentPage} of {userTotalPages}</span>
+                  <span className="text-xs font-bold text-slate-500 font-mono">PAGE {userCurrentPage} / {userTotalPages}</span>
                   <button
                     disabled={userCurrentPage === userTotalPages}
                     onClick={() => setUserCurrentPage(p => p + 1)}
-                    className="px-4 py-2 bg-white rounded-xl text-sm font-bold text-slate-500 disabled:opacity-50 hover:bg-slate-50 shadow-sm"
+                    className="px-4 py-2 bg-[#0B1221] border border-white/10 rounded-xl text-xs font-bold text-slate-400 disabled:opacity-50 hover:bg-white/5 hover:text-white uppercase tracking-wide"
                   >
                     Next
                   </button>
@@ -765,277 +749,89 @@ const AdminDashboard = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4"
+            className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
             onClick={() => setShowReportModal(false)}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white/90 backdrop-blur-xl w-full max-w-lg rounded-3xl p-8 shadow-2xl border border-white/50 text-center space-y-6"
+              className="bg-[#0B1221] w-full max-w-lg rounded-3xl p-8 shadow-2xl border border-white/10 text-center space-y-6 relative overflow-hidden"
               onClick={e => e.stopPropagation()}
             >
-              <div className="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500"></div>
+
+              <div className="w-16 h-16 bg-blue-900/20 text-blue-400 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-blue-500/20">
                 <Download size={32} />
               </div>
 
               <div className="space-y-2">
-                <h2 className="text-2xl font-black text-slate-900">Generate Report</h2>
-                <p className="text-slate-500 font-medium">Download comprehensive data in Excel-compatible CSV format.</p>
+                <h2 className="text-2xl font-black text-white uppercase tracking-tight">Export Data Log</h2>
+                <p className="text-slate-500 text-sm font-mono">Decrypt and download sector metrics.</p>
               </div>
 
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-left space-y-4">
+              <div className="bg-[#0F172A] p-6 rounded-2xl border border-white/5 text-left space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Report Type</label>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Data Type</label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={() => setReportType('issues')}
-                      className={`p-3 rounded-xl font-bold text-sm transition-all border-2 ${reportType === 'issues'
-                        ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-                        : 'border-transparent bg-white text-slate-500 hover:bg-white hover:shadow-sm'
+                      className={`p-3 rounded-xl font-bold text-xs uppercase tracking-wide transition-all border ${reportType === 'issues'
+                        ? 'border-blue-500/50 bg-blue-500/10 text-blue-400'
+                        : 'border-white/5 bg-black/20 text-slate-500 hover:bg-white/5'
                         }`}
                     >
-                      Issues Report
+                      Issue Anomalies
                     </button>
                     <button
                       onClick={() => setReportType('users')}
-                      className={`p-3 rounded-xl font-bold text-sm transition-all border-2 ${reportType === 'users'
-                        ? 'border-violet-600 bg-violet-50 text-violet-700'
-                        : 'border-transparent bg-white text-slate-500 hover:bg-white hover:shadow-sm'
+                       className={`p-3 rounded-xl font-bold text-xs uppercase tracking-wide transition-all border ${reportType === 'users'
+                        ? 'border-blue-500/50 bg-blue-500/10 text-blue-400'
+                        : 'border-white/5 bg-black/20 text-slate-500 hover:bg-white/5'
                         }`}
                     >
-                      Users Report
+                      Operative Roster
                     </button>
                   </div>
                 </div>
-
+                
                 {reportType === 'issues' && (
-                  <div className="animate-in fade-in slide-in-from-top-2">
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Filter by Status</label>
-                    <select
-                      value={reportStatus}
-                      onChange={(e) => setReportStatus(e.target.value)}
-                      className="w-full p-3 bg-white rounded-xl font-bold text-sm text-slate-700 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                    >
-                      <option value="all">All Statuses</option>
-                      <option value="reported">Pending</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="resolved">Resolved</option>
-                      <option value="closed">Closed</option>
-                    </select>
-                  </div>
+                     <div>
+                        <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Filter Status</label>
+                        <select 
+                            className="w-full bg-black/40 border border-white/10 text-white text-sm rounded-xl p-3 focus:outline-none focus:border-blue-500"
+                            value={reportStatus}
+                            onChange={(e) => setReportStatus(e.target.value)}
+                        >
+                            <option value="all">All Statuses</option>
+                            <option value="reported">Pending Only</option>
+                            <option value="in_progress">Active Only</option>
+                            <option value="resolved">Resolved Only</option>
+                        </select>
+                     </div>
                 )}
               </div>
 
-              <button
-                onClick={generateReport}
-                disabled={isReportGenerating}
-                className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-lg hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-slate-200 active:scale-[0.98] flex items-center justify-center gap-3"
-              >
-                {isReportGenerating ? (
-                  <>
-                    <RefreshCw className="animate-spin" size={20} />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Download size={20} />
-                    Download Report
-                  </>
-                )}
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* View Issue Modal */}
-      <AnimatePresence>
-        {showIssueModal && selectedIssue && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4"
-            onClick={() => setShowIssueModal(false)}
-          >
-            <motion.div
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              className="bg-white w-full max-w-lg rounded-t-3xl sm:rounded-[2rem] p-6 pb-32 shadow-2xl space-y-6 max-h-[85dvh] overflow-y-auto"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center">
-                <StatusBadge status={selectedIssue.status} />
-                <button onClick={() => setShowIssueModal(false)} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200"><X size={20} /></button>
-              </div>
-
-              {/* Modal Image */}
-              {selectedIssue.images && selectedIssue.images.length > 0 && (
-                <div className="rounded-2xl overflow-hidden shadow-sm border border-slate-100">
-                  <img src={selectedIssue.images[0]} alt="Issue Detail" className="w-full h-auto max-h-64 object-cover" />
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <h2 className="text-2xl font-black text-slate-900 leading-tight">{selectedIssue.title}</h2>
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-                  <MapPin size={16} className="text-indigo-500" />
-                  <span>{selectedIssue.location?.address || 'Location pinned on map'}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
-                  {selectedIssue.anonymous ? '?' : (selectedIssue.reportedBy?.name?.[0] || 'U')}
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Reported By</div>
-                  <div className="font-bold text-slate-900">
-                    {selectedIssue.anonymous ? (
-                      <span className="inline-flex items-center gap-2 text-slate-500 italic">
-                        Anonymous User
-                        <span className="text-[10px] px-2 py-0.5 bg-slate-100 border border-slate-200 rounded-full not-italic font-bold uppercase">Hidden</span>
-                      </span>
-                    ) : (
-                      selectedIssue.reportedBy?.name || 'Unknown User'
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <p className="text-slate-600 text-lg leading-relaxed">
-                {selectedIssue.description}
-              </p>
-
-              <div className="pt-6 border-t border-slate-100">
-                <button
-                  onClick={() => handleRemindDept(selectedIssue._id)}
-                  className="w-full mb-4 py-3 rounded-xl bg-indigo-50 text-indigo-700 font-bold text-sm hover:bg-indigo-100 transition-colors flex items-center justify-center gap-2"
+               <button
+                  onClick={generateReport}
+                  disabled={isReportGenerating}
+                  className="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold shadow-lg shadow-blue-900/20 transition-all uppercase tracking-widest text-xs flex items-center justify-center gap-2 group"
                 >
-                  <Bell size={16} /> Send Department Reminder
+                  {isReportGenerating ? (
+                      <>
+                        <RefreshCw size={16} className="animate-spin" /> Processing...
+                      </>
+                  ) : (
+                      <>
+                        <Download size={16} className="group-hover:translate-y-0.5 transition-transform"/> Initialize Download
+                      </>
+                  )}
                 </button>
-                <div className="flex justify-between text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Update Status</div>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => { updateIssueStatus(selectedIssue._id, 'in_progress'); setShowIssueModal(false); }}
-                    className="py-3.5 rounded-xl bg-amber-50 text-amber-700 font-bold text-sm hover:bg-amber-100 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Clock size={16} /> In Progress
-                  </button>
-                  <button
-                    onClick={() => { updateIssueStatus(selectedIssue._id, 'resolved'); setShowIssueModal(false); }}
-                    className="py-3.5 rounded-xl bg-emerald-50 text-emerald-700 font-bold text-sm hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <CheckCircle size={16} /> Mark Resolved
-                  </button>
-                  <button
-                    onClick={() => { updateIssueStatus(selectedIssue._id, 'closed'); setShowIssueModal(false); }}
-                    className="py-3.5 rounded-xl bg-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <XCircle size={16} /> Close Issue
-                  </button>
-                  <button
-                    onClick={() => { deleteIssue(selectedIssue._id); setShowIssueModal(false); }}
-                    className="py-3.5 rounded-xl bg-red-50 text-red-600 font-bold text-sm hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Trash2 size={16} /> Delete
-                  </button>
-                </div>
-              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Edit User Modal */}
-      <AnimatePresence>
-        {showUserModal && selectedUser && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4"
-            onClick={() => setShowUserModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-slate-900">Edit User</h2>
-                <button onClick={() => setShowUserModal(false)} className="p-2 bg-slate-100 rounded-full text-slate-500 hover:bg-slate-200"><X size={20} /></button>
-              </div>
-
-              <form onSubmit={handleUserUpdate} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">Role</label>
-                  <select
-                    className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
-                    value={selectedUser.role}
-                    onChange={e => setSelectedUser({ ...selectedUser, role: e.target.value })}
-                  >
-                    <option value="user">User</option>
-                    <option value="admin">Admin</option>
-                    <option value="government">Government Official</option>
-                    <option value="manager">City Manager (Supervisor)</option>
-
-                    <option value="field_worker">Field Worker</option>
-                  </select>
-                </div>
-
-                {['government', 'manager', 'field_worker'].includes(selectedUser.role) && (
-                  <div>
-                    <label className="block text-sm font-bold text-slate-700 mb-1">Department</label>
-                    <select
-                      className="w-full p-3 bg-slate-50 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
-                      value={selectedUser.department || ''}
-                      onChange={e => setSelectedUser({ ...selectedUser, department: e.target.value })}
-                      required={['government', 'manager', 'field_worker'].includes(selectedUser.role)}
-                    >
-                      <option value="">Select Department</option>
-                      <option value="roads">Roads Department</option>
-                      <option value="lighting">Lighting Department</option>
-                      <option value="water">Water Department</option>
-                      <option value="cleanliness">Sanitation (Cleanliness)</option>
-                      <option value="safety">Public Safety</option>
-                      <option value="obstructions">Obstructions</option>
-                    </select>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={selectedUser.isActive !== false}
-                    onChange={e => setSelectedUser({ ...selectedUser, isActive: e.target.checked })}
-                    className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500"
-                  />
-                  <label htmlFor="isActive" className="text-sm font-bold text-slate-700">Account Active</label>
-                </div>
-
-
-
-                <button
-                  type="submit"
-                  className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all mt-4"
-                >
-                  Save Changes
-                </button>
-              </form>
-
-            </motion.div>
-          </motion.div>
-
-        )}
-      </AnimatePresence>
-
-    </div >
+    </div>
   );
 };
 
