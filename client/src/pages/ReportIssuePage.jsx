@@ -240,8 +240,8 @@ const ReportIssuePage = () => {
               </div>
               <h2 className="text-xl md:text-2xl font-bold text-white mb-2 tracking-wide">PROCESSING...</h2>
               <div className="flex flex-col gap-1 items-center">
-                   <p className="text-sm md:text-base text-blue-400 font-mono">>> ANALYZING STRUCTURAL INTEGRITY</p>
-                   <p className="text-sm md:text-base text-blue-400 font-mono delay-75">>> CLASSIFYING HAZARD TYPE</p>
+                   <p className="text-sm md:text-base text-blue-400 font-mono">{'>>'} ANALYZING STRUCTURAL INTEGRITY</p>
+                   <p className="text-sm md:text-base text-blue-400 font-mono delay-75">{'>>'} CLASSIFYING HAZARD TYPE</p>
               </div>
             </motion.div>
           )}
