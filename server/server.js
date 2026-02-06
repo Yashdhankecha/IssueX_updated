@@ -31,7 +31,7 @@ app.use(cors({
       'https://issuex.netlify.app',
       'https://your-custom-domain.com'
     ]
-    : ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173'],
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://localhost:5173', 'http://127.0.0.1:5173', 'https://localhost', 'capacitor://localhost', 'http://10.27.225.134:3000', 'http://10.27.225.134:5173'],
   credentials: true
 }))
 
