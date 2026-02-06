@@ -30,6 +30,7 @@ import {
   Terminal,
   Database
 } from 'lucide-react';
+import IssueDetailModal from '../components/IssueDetailModal';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
@@ -827,6 +828,140 @@ const AdminDashboard = () => {
                       </>
                   )}
                 </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Issue Detail Modal */}
+      {showIssueModal && selectedIssue && (
+        <IssueDetailModal
+          issue={selectedIssue}
+          onClose={() => { setShowIssueModal(false); setSelectedIssue(null); }}
+        />
+      )}
+
+      {/* User Edit Modal */}
+      <AnimatePresence>
+        {showUserModal && selectedUser && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={() => setShowUserModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0B1221] w-full max-w-md rounded-3xl p-6 shadow-2xl border border-white/10 relative overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-white uppercase tracking-wide flex items-center gap-2">
+                  <UserCheck className="text-blue-400" size={24} />
+                  Edit Clearance
+                </h2>
+                <button
+                  onClick={() => setShowUserModal(false)}
+                  className="p-2 text-slate-500 hover:text-white rounded-full hover:bg-white/10 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <form onSubmit={handleUserUpdate} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Operative Name</label>
+                  <input
+                    type="text"
+                    value={selectedUser.name}
+                    disabled
+                    className="w-full bg-[#0F172A] border border-white/5 rounded-xl px-4 py-3 text-slate-400 text-sm font-medium focus:outline-none cursor-not-allowed"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Rank / Role</label>
+                  <div className="relative">
+                    <select
+                      value={selectedUser.role}
+                      onChange={(e) => setSelectedUser({ ...selectedUser, role: e.target.value })}
+                      className="w-full bg-[#0F172A] border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-medium focus:outline-none focus:border-blue-500 appearance-none cursor-pointer hover:border-white/20 transition-colors"
+                    >
+                      <option value="user">User</option>
+                      <option value="admin">Admin</option>
+                      <option value="manager">Manager</option>
+                      <option value="government">Government</option>
+                      <option value="field_worker">Field Worker</option>
+                    </select>
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                      <ChevronRight size={16} className="rotate-90" />
+                    </div>
+                  </div>
+                </div>
+
+                {['government', 'manager', 'field_worker'].includes(selectedUser.role) && (
+                  <div className="animate-in fade-in slide-in-from-top-2">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Department</label>
+                    <div className="relative">
+                      <select
+                        value={selectedUser.department || ''}
+                        onChange={(e) => setSelectedUser({ ...selectedUser, department: e.target.value })}
+                        className="w-full bg-[#0F172A] border border-white/10 rounded-xl px-4 py-3 text-white text-sm font-medium focus:outline-none focus:border-blue-500 appearance-none cursor-pointer hover:border-white/20 transition-colors"
+                      >
+                        <option value="">Select Department</option>
+                        <option value="Roads">Roads</option>
+                        <option value="Water">Water</option>
+                        <option value="Lighting">Lighting</option>
+                        <option value="Sanitation">Sanitation</option>
+                        <option value="Public Safety">Public Safety</option>
+                      </select>
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                        <ChevronRight size={16} className="rotate-90" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between p-4 bg-[#0F172A] rounded-xl border border-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${selectedUser.isActive ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                      {selectedUser.isActive ? <Unlock size={18} /> : <Lock size={18} />}
+                    </div>
+                    <div>
+                      <div className="text-white font-bold text-sm">Account Status</div>
+                      <div className="text-xs text-slate-500 font-mono">
+                        {selectedUser.isActive ? 'ACTIVE ACCESS' : 'LOCKED'}
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedUser({ ...selectedUser, isActive: !selectedUser.isActive })}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${selectedUser.isActive ? 'bg-emerald-500' : 'bg-slate-700'}`}
+                  >
+                    <div className={`absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform ${selectedUser.isActive ? 'translate-x-6' : 'translate-x-0'}`} />
+                  </button>
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowUserModal(false)}
+                    className="flex-1 py-3 bg-[#0F172A] text-slate-400 font-bold rounded-xl hover:bg-white/5 hover:text-white transition-all uppercase tracking-wide text-xs"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 shadow-lg shadow-blue-900/20 transition-all uppercase tracking-wide text-xs"
+                  >
+                    Update Profile
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}

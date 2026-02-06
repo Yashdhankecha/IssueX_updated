@@ -1,143 +1,170 @@
 <div align="center">
 
-# 🚧 IssueX - Smart Civic Issue Tracker 🚧
+# 🚧 <span style="color: #4facfe;">IssueX</span> <span style="color: #00f2fe;">Pro</span> 🚧
+### *The Future of Civic Problem Solving*
+
+![Banner](https://img.shields.io/badge/AI--POWERED-CIVIC%20RESOLUTION-000000?style=for-the-badge&logo=google-gemini&link=https://issuex.netlify.app)
+<br/>
 
 [![MERN Stack](https://img.shields.io/badge/MERN-Full%20Stack-000000?style=for-the-badge&logo=mongodb&logoColor=green)](https://mongodb.com)
-[![Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
+[![Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini%202.0-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
 [![Google Maps](https://img.shields.io/badge/Maps-Google%20Maps-34A853?style=for-the-badge&logo=google-maps&logoColor=white)](https://developers.google.com/maps)
-[![Status](https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge)]()
+[![Leaflet](https://img.shields.io/badge/Maps-Leaflet-199900?style=for-the-badge&logo=leaflet&logoColor=white)](https://leafletjs.com/)
+[![Tailwind](https://img.shields.io/badge/UI-Tailwind%20CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
-> **"Snap. Scan. Solved."**
+<br/>
+
+> **"Snap a photo. We handle the rest."**
 >
-> A next-gen civic issue reporting platform powered by **Google Gemini AI** and **Google Maps**.  
-> We make reporting potholes, garbage, and broken lights as easy as taking a selfie.
+> 🚀 **IssueX** revolutionizes how citizens interact with their cities. Powered by **Generative AI**, we turn a simple photo into a detailed, actionable civic report in seconds.
 
-<br />
-
-### [🔴 VIEW LIVE DEMO](https://issuex.netlify.app/)
-
-<br />
+### [🔴 WATCH THE LIVE DEMO](https://issuex.netlify.app/)
 
 </div>
 
 ---
 
-## 💎 Google Cloud Services Used
+## 💎 Why IssueX?
 
-This project heavily leverages Google's ecosystem to provide a smart, seamless experience.
+We are building a **Smart City Ecosystem** that connects citizens, authorities, and field workers in real-time.
 
-| Service | Feature Implementation | Impact |
+| ⚡ For Citizens | 🏢 For Government | 👷 For Field Workers |
 | :--- | :--- | :--- |
-| **Google Gemini 2.0 Flash** | **Automated Issue Analysis**<br>Scans user-uploaded photos to automatically detect the *Issue Title*, *Category*, *Severity*, and generate a *Description*. | Reduces reporting time by **80%**. No more typing long descriptions manually. |
-| **Google Maps Geocoding API** | **Smart Address Resolution**<br>Converts raw GPS coordinates (Lat/Lng) into a readable street address (e.g., "Sector 14, MG Road"). | Ensures authorities know exactly *where* the issue is without guessing. |
-| **Google Maps JavaScript API** | **Interactive Visualization**<br>Renders dynamic maps (via Leaflet adapter) for pinpointing issues and visualizing coverage. | Provides a spatial understanding of civic problems. |
-| **Firebase Authentication** | **Secure Identity**<br>Handles user sign-ups, log-ins, and session security seamlessly. | Trusted, secure, and fast authentication for every user. |
+| **One-Tap Reporting:** No forms. Just upload. | **AI Analytics:** Predict hotspots & allocate funds. | **Smart Routing:** Go exactly where the problem is. |
+| **Gamified Impact:** Earn badges & climb safety leaderboards. | **Fraud Detection:** AI filters fake/duplicate reports. | **Proof of Work:** Upload "Fixed" photos for verification. |
+| **Real-time Updates:** Track your issue like a pizza delivery. | **Department Heatmaps:** Visualize city health instantly. | **Digital Tasklist:** No more paperwork. |
 
 ---
 
-## 🔥 Comprehensive Features
+## 🌟 Key Features
 
-### 👤 For Citizens (Users)
-*   **📸 AI-First Reporting**: Just upload a photo. Gemini AI fills out the form (Title, Desc, Category, Severity) for you.
-*   **📍 Location Intelligence**: Automatic location detection with visual map confirmation.
-*   **👍 Community Voting**: Upvote issues that matter to you. Higher votes = Higher priority.
-*   **💬 Discussion Threads**: Comment on issues to provide updates or ask questions.
-*   **🔔 Real-time Notifications**: Get notified when an issue you reported or followed gets fixed.
-*   **🔍 Advanced Filtering**: Find issues by radius (e.g., "5km near me"), category, or status.
-*   **📊 Personal Dashboard**: Track the status of your reported issues in one place.
+### � **The Brain: Google Gemini 2.0 Flash**
+> *Our secret weapon.*
+*   **Auto-Detection:** Instantly identifies *Potholes, Garbage, Streetlights, Water Leakage*.
+*   **Severity Scoring:** AI judges if an issue is "Low", "Medium", or "Critical".
+*   **Context Generation:** Writes professional descriptions for official records.
 
-### �️ For Authorities (Admins)
-*   **📉 Analytics Dashboard**: See high-level stats (Total Issues, Resolved Count, Category Breakdown).
-*   **🚦 Status Management**: Update issue status (`Reported` → `In Progress` → `Resolved`).
-*   **🗺️ Heatmap View**: Identify problem hotspots in the city (e.g., "Why are there so many potholes in Sector 5?").
-*   **⚡ Priority Sort**: AI-detected severity + User Votes helps in triaging critical tasks first.
+### � **The Look: Premium Glassmorphism**
+> *Designed for the modern web.*
+*   **Dark Mode Native:** Sleek, battery-saving, and easy on the eyes.
+*   **Interactive Maps:** Clustering, heatmaps, and precise geolocation pinning.
+*   **Smooth Animations:** Powered by `Framer Motion` for a native-app feel.
+
+### 🛡️ **The Shield: Role-Based Security**
+> *5 Levels of Access*
+1.  **Citizen** 🧑‍🤝‍🧑 - Report & Vote
+2.  **Admin** 👑 - Full System Control
+3.  **Government** 🏛️ - Analytics & Oversight
+4.  **Manager** 💼 - Department operations
+5.  **Field Worker** 👷 - On-ground execution
 
 ---
 
-## 🛠️ Tech Stack
+## 📸 Visual Tour
 
 <div align="center">
 
-| Area | Technology |
-| :--- | :--- |
-| **Frontend** | React + Vite + TailwindCSS + Framer Motion + Lucide Icons |
-| **Backend** | Node.js + Express + MongoDB (Mongoose) |
-| **AI Engine** | **Google Gemini 2.0 Flash / 1.5 Flash** (via `@google/generative-ai`) |
-| **Maps Service** | **Google Maps Geocoding API** + React-Leaflet |
-| **Auth** | Firebase Authentication + JWT |
-| **Storage** | Cloudinary (Image Optimization & Hosting) |
+| **🤖 AI Analysis In Action** | **🗺️ Smart City Map** |
+|:---:|:---:|
+| <img src="./client/public/pics/ai_preview.png" width="400" alt="AI Analysis"> | <img src="./client/public/pics/map_view.png" width="400" alt="Admin Dashboard"> |
+| *Gemini Vision detecting road damage* | *Live Issue Tracking & Heatmaps* |
+
+| **📊 Admin Command Center** | **📱 Mobile First Design** |
+|:---:|:---:|
+| <img src="./client/public/pics/admin_preview.png" width="400" alt="Admin Dashboard"> | <img src="./client/public/pics/mobile_view.png" width="400" alt="Mobile View"> |
+| *Real-time metrics & staff management* | *Reports on the go* |
 
 </div>
 
 ---
 
-## 🚀 Quick Start Guide
+## 🛠️ Tech Stack Architecture
 
-Want to run this locally? Follow these steps:
+**IssueX** is built on a robust, scalable MERN architecture.
 
-### 1. Clone & Install
+*   **Frontend:** `React 18` + `Vite` (Blazing fast build tones)
+*   **Styling:** `TailwindCSS` + `Framer Motion` (Glassmorphism UI)
+*   **Maps:** `React-Leaflet` + `Google Maps Geocoding API`
+*   **Backend:** `Node.js` + `Express` (RESTful API)
+*   **Database:** `MongoDB Atlas` (Geospatial Indexing)
+*   **AI Engine:** `Google Gemini SDK` (@google/generative-ai)
+*   **Auth:** `Firebase Authentication` + `JWT Patterns`
+*   **Storage:** `Cloudinary` (Image CDN)
+
+---
+
+## 🚀 Easy Setup Guide
+
+Get this project running on your local machine in **5 minutes**.
+
+### Prerequisites
+*   Node.js (v18+)
+*   MongoDB (Local or Atlas URI)
+*   Google Cloud API Key (Gemini + Maps)
+
+### 1. Clone the Repo
 ```bash
 git clone https://github.com/yashdhankecha/issuex.git
-cd issuex by
+cd issuex
+```
 
-# Install Backend
+### 2. Install Dependencies
+```bash
+#  Install Server Deps
 cd server
 npm install
 
-# Install Frontend (new terminal)
+# Install Client Deps
 cd ../client
 npm install
 ```
 
-### 2. Configure Environment
-Create a `.env` file in the `server/` folder with your keys:
+### 3. Configure Secrets (`.env`)
+
+**`/server/.env`**
 ```env
-# Server
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/issuex
-
-# Google Cloud (REQUIRED for AI & Maps)
-GEMINI_API_KEY=your_gemini_key_here
-GOOGLE_MAPS_API_KEY=your_google_maps_key_here
-
-# Cloudinary (For Images)
+MONGODB_URI=your_mongodb_uri
+GEMINI_API_KEY=your_gemini_key
 CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# Firebase & Auth
-JWT_SECRET=super_secret_key
+CLOUDINARY_API_KEY=your_key
+CLOUDINARY_API_SECRET=your_secret
+JWT_SECRET=super_secret
 ```
 
-### 3. Run It!
+**`/client/.env`**
+```env
+VITE_API_URL=http://localhost:5000
+VITE_FIREBASE_API_KEY=your_firebase_key
+... (other firebase config)
+```
+
+### 4. Blast Off! 🚀
 ```bash
-# Terminal 1 (Server)
-cd server
-npm run dev
+# Terminal 1: Backend
+cd server && npm run dev
 
-# Terminal 2 (Client)
-cd client
-npm run dev
+# Terminal 2: Frontend
+cd client && npm run dev
 ```
-Visit `http://localhost:5173` and start reporting!
-
----
-
-## � Application Preview
-
-*(Add your screenshots here)*
-
-| **AI Auto-Analysis** | **Interactive Map** |
-| :---: | :---: |
-| ![AI Analysis](./client/public/pics/ai_report.png) | ![Map View](./client/public/pics/map_view.png) |
-| *Gemini scans and fills details automatically* | *Visualizing issues across the city* |
 
 ---
 
 <div align="center">
-  
-**Made with ❤️ BY Tripod developers**
 
-[Star this Repo ⭐](#) • [Report Bug 🐛](#)
+## 🤝 Contributing
+
+We love open source! If you have an idea, feel free to fork and submit a PR.
+
+<a href="https://github.com/yashdhankecha/issuex/network/members">
+  <img src="https://contrib.rocks/image?repo=yashdhankecha/issuex" alt="Contributors" />
+</a>
+
+<br/>
+<br/>
+
+**Made with 💙 by Tripod Developers**
+
+[![Star on GitHub](https://img.shields.io/github/stars/yashdhankecha/issuex?style=social)](https://github.com/yashdhankecha/issuex)
 
 </div>
