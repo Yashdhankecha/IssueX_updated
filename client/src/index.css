@@ -286,6 +286,15 @@
   .preserve-3d {
     transform-style: preserve-3d;
   }
+
+  /* Safe Area Utilities */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .mt-safe {
+    margin-top: env(safe-area-inset-top);
+  }
 }
 
 /* Leaflet Map Customization */

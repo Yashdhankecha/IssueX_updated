@@ -123,7 +123,7 @@ const HomePage = () => {
       </div>
 
       {/* --- Mobile Sticky Header --- */}
-      <div className="lg:hidden sticky top-0 z-40 bg-[#030712]/90 backdrop-blur-xl border-b border-white/10 px-4 py-3 flex items-center justify-between transition-all duration-300 w-full">
+      <div className="lg:hidden sticky top-0 z-40 bg-[#030712]/90 backdrop-blur-xl border-b border-white/10 px-4 pt-safe pb-3 flex items-center justify-between transition-all duration-300 w-full">
          <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-lg shadow-lg border border-white/20">
                {user?.profilePicture ? (
